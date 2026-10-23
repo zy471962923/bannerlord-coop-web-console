@@ -17,9 +17,12 @@
   // 单独指 savesDir（默认 coopData\DedicatedServer\Game Saves）
   "savesDir": "",
 
-  // 控制台监听：127.0.0.1 只本机；auto = 回环 + 私有网段（局域网/ZeroTier）
+  // 控制台监听：
+  //   0.0.0.0      全网卡（默认）—— 谁能连上这台机器谁就能打开面板，不按来源 IP 过滤
+  //   127.0.0.1    只本机
+  //   auto         回环 + 私有网段（局域网 / ZeroTier），公网网卡不放
   "port": 7788,
-  "host": "127.0.0.1",
+  "host": "0.0.0.0",
 
   // 游戏端口（防火墙要放行 UDP）
   "gamePort": 4200,

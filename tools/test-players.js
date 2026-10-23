@@ -149,7 +149,8 @@ check('在线记录只给角色名时也能认出是谁（袁本初 ↔ Corvus.J
   if (!s.ok) return;
   const target = s.players.find((p) => p.detail && p.detail.name);
   assert.ok(target, '没有带 detail.name 的玩家，无法验证（先让 CoopPlayerCard 落一次盘）');
-  const online = [{ id: 0, name: target.detail.name, state: 'on map', addr: '10.0.0.9:1234' }];
+  // 203.0.113.0/24 是 RFC 5737 保留给文档示例的网段，不会指向任何真实主机
+  const online = [{ id: 0, name: target.detail.name, state: 'on map', addr: '203.0.113.9:1234' }];
   const s2 = playersLib.snapshot({ onlineList: online, world: null });
   const hit = s2.players.find((p) => p.platformName === target.platformName);
   assert.ok(hit.online, target.platformName + ' 应当被认成在线');

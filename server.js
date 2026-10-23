@@ -22,10 +22,11 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 
 // ——————————————— 监听地址 ———————————————
 // COOP_CONSOLE_HOST 支持三种写法：
-//   127.0.0.1                 只本机（默认）
-//   0.0.0.0                   全网卡，包括公网网卡 —— 不推荐，等于全放
-//   auto  /  127.0.0.1,10.5.1.2  按列表逐个 bind
-// auto = 回环 + 所有「私有网段」IPv4（ZeroTier/WLAN/企业内网），**公网 IP 不自动放**。
+//   0.0.0.0                   全网卡（默认）—— 谁能连上这台机器就能打开面板
+//   127.0.0.1                 只本机
+//   auto  /  127.0.0.1,192.168.1.10   按列表逐个 bind
+// auto = 回环 + 所有「私有网段」IPv4（ZeroTier/WLAN/企业内网），公网网卡不 bind。
+// 默认值就是 0.0.0.0，不做来源过滤 —— 需要收紧的场合自己改成 auto 或具体地址。
 const LOOPBACK_HOSTS = ['127.0.0.1', 'localhost', '::1'];
 
 function isPrivateV4(ip) {
@@ -628,18 +629,23 @@ for (const host of BIND_HOSTS) {
 
 function printBanner() {
   const q = TOKEN ? '?token=' + TOKEN : '';
-  const external = listeners.filter((h) => !LOOPBACK_HOSTS.includes(h));
+  const wildcard = listeners.some((h) => h === '0.0.0.0' || h === '::');
+  const nics = lanAddresses();
+  // 0.0.0.0 / :: 是通配监听，本身不是能在浏览器里敲的地址。听全部网卡时就把本机每一张
+  // 网卡的 IP 列出来（谁连得上哪张就抄哪行），千万别把 0.0.0.0 当网址发给别人。
+  const shown = wildcard ? nics : nics.filter((a) => listeners.indexOf(a.address) >= 0);
+  const tail = wildcard
+    ? '（' + (nics.length ? '全网卡，' + nics.length + ' 个可访问地址' : '全网卡，但没有可用的网卡地址') + '）'
+    : (shown.length ? '（' + shown.length + ' 个对外地址）' : '（仅本机）');
   console.log('');
   console.log('  Bannerlord Coop 服务器控制台');
-  console.log('  监听      : ' + (listeners.length ? listeners.join(', ') : '（全部失败）') + ':' + config.httpPort +
-    (external.length ? '（' + external.length + ' 个对外地址）' : '（仅本机）'));
+  console.log('  监听      : ' + (listeners.length ? listeners.join(', ') : '（全部失败）') + ':' + config.httpPort + tail);
   console.log('  监听来源  : 地址 = ' + config.httpHostSource + '，端口 = ' + config.httpPortSource +
     '（改 config.json 后重启生效）');
   console.log('  本机打开  : http://127.0.0.1:' + config.httpPort + '/' + q);
-  for (const h of external) {
-    const name = (lanAddresses().find((a) => a.address === h) || {}).name || '';
-    const tag = /zerotier/i.test(name) ? 'ZeroTier' : '局域网  ';
-    console.log('  ' + tag + ' : http://' + h + ':' + config.httpPort + '/' + q + (name ? '   [' + name + ']' : ''));
+  for (const a of shown) {
+    const tag = /zerotier/i.test(a.name) ? 'ZeroTier' : '局域网  ';
+    console.log('  ' + tag + ' : http://' + a.address + ':' + config.httpPort + '/' + q + (a.name ? '   [' + a.name + ']' : ''));
   }
   if (TOKEN) console.log('  访问口令  : 已启用（来自 COOP_CONSOLE_TOKEN）');
   console.log('  服务端目录 : ' + config.serverDir);

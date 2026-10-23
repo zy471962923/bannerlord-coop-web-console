@@ -23,9 +23,11 @@
 ```bat
 npm install
 node server.js                :: 监听 0.0.0.0:7788（所有网卡）
+node server.js --port 7790    :: 换个端口
 node server.js --local        :: 只本机 127.0.0.1
-node server.js --lan 7790     :: 局域网 / ZeroTier，自定义端口
 ```
+
+默认就是 `0.0.0.0`，**谁连得上这台机器谁就能打开面板**，不按来源 IP 过滤。
 
 首次启动后到「配置」标签填两个路径（服务端安装目录 / 存档目录），保存并重启控制台。
 路径填错卡片下面会标红，不用猜。
@@ -72,8 +74,7 @@ node server.js --lan 7790     :: 局域网 / ZeroTier，自定义端口
 ```
 web-console/
 ├─ server.js                  HTTP + SSE + 路由（零框架）
-├─ start-console.bat          仅本机
-├─ start-console-lan.bat      对外监听（auto：回环 + 私有网段）
+├─ start-console.bat          启动控制台（默认 0.0.0.0:7788，所有网卡都能进）
 ├─ open-firewall.bat          管理员放行 TCP 7788 / UDP 4200（换机才需要）
 ├─ node.exe                   仅发布包里有（绿色版运行时，源码库里没有）
 ├─ INSTALL.txt                仅发布包里有（给玩家的安装说明）
@@ -132,7 +133,7 @@ web-console/
 ## 三、配置与分发（换机 / 给别人用）
 
 路径、端口全部可配，**代码里没有写死盘符**：控制台自己算位置，服务端目录自动往上找。
-优先级：**环境变量 > `config.json` > 命令行参数（bat 的 `--lan` / `--port`）> 自动探测**
+优先级：**环境变量 > `config.json` > 命令行参数（`--host` / `--port`）> 默认值**
 （`--port` / `--host` 因为点了具体值，优先级比文件高，细节见「十、改 .bat 时的硬性规矩」）。
 
 > 端口和监听地址以前是 `start-console.bat` 用 `set COOP_CONSOLE_*` 传的，等于把这两项钉死在
@@ -175,7 +176,7 @@ node lib/config.js --init     :: 按当前探测结果生成 config.json（已�
 | `serverDir` | 服务端目录本身；给了就不用 `root` | `root\DedicatedServer`（若 `root` 本身就是服务端目录则不拼） |
 | `coopData` | 存档/配置根目录（`server-config.json`、`Game Saves` 都在这下面） | `%USERPROFILE%\Documents\Mount and Blade II Bannerlord\CoopData` |
 | `savesDir` / `dsLogsDir` / `backupDir` | 单独覆盖存档、日志、备份目录 | 都从 `coopData` / 控制台目录推算 |
-| `port` / `host` | 监听端口与地址（`127.0.0.1` / `auto`） | `7788` / `127.0.0.1` |
+| `port` / `host` | 监听端口与地址（`0.0.0.0` / `127.0.0.1` / `auto`） | `7788` / `0.0.0.0` |
 | `gamePort` | 游戏端口（防火墙要放行 UDP） | `4200` |
 
 示例见 `config.example.json`（带注释，`lib/jsonc` 解析，允许 `//` 和尾逗号）。
@@ -185,7 +186,7 @@ node lib/config.js --init     :: 按当前探测结果生成 config.json（已�
 1. 把整个 `web-console` 目录拷过去（`node_modules` 要带上，`node-pty` 是原生的，换机最好重装）
 2. `node lib/config.js` —— 看哪一项 ✗，照着提示改
 3. 大概率只需要改 `coopData`（对方 Windows 用户名不同）
-4. 双击 `start-console.bat`（本机）或 `start-console-lan.bat`（局域网/ZeroTier）
+4. 双击 `start-console.bat` —— 默认全网卡监听，本机和别的机器都能开
 
 > 备份目录默认放控制台自己的 `backups\`；若检测到老布局
 > `root\backups\web-console` 存在则沿用，避免升级后找不到历史备份。
@@ -280,48 +281,57 @@ launcher 把 UTF-8 字节当 ANSI 写进控制台，控制台再按 UTF-8 编出
 | GET | `/api/console-config` | 控制台配置的可编辑视图：8 个字段定义 + 当前生效值 + `envLocked` + `issues` + `requiresRestart` |
 | POST | `/api/console-config` | `{values}` 校验并写 `config.json`；`{dryRun:true, values}` 只校验不落盘。校验不过返回 **400** + `issues` + `error` 摘要 |
 
-默认只监听 `127.0.0.1`，别的机器访问不到。要让局域网或 ZeroTier 上的机器也能开：
+默认监听 `0.0.0.0`，也就是**这块机器上的每一张网卡都听**——回环、局域网、ZeroTier、公网网卡一视同仁，
+不做任何来源 IP 过滤。谁能连上这台机器的 7788 端口，谁就能打开面板。双击 `start-console.bat`
+就是这个行为，没有第二个开关要开。
 
-**双击 `start-console-lan.bat`**（等价于 `start-console.bat lan`），它给的是 `auto` 兜底地址
-（`config.json` 里写了 `host` 则以后者为准），按 `auto` 解释时监听：
-
-- `127.0.0.1`
-- 所有**私有网段** IPv4（`10.x` / `172.16–31.x` / `192.168.x` / `100.64–127.x`），ZeroTier、WLAN、企业内网都在内
-- **公网 IP 不自动放**——这台机器上那张 `202.80.104.28` 的网卡不会被监听，避免把控制台暴露到互联网
-
-**默认无口令**，这套东西跑在 ZeroTier / 内网里，都是自己人，直接敲地址就能进：
+启动窗口会打印几行可直接复制的地址，形如：
 
 ```
-http://10.5.218.11:7788
-http://192.168.113.142:7788
+本机     : http://127.0.0.1:7788/
+局域网   : http://<本机IP>:7788/
+ZeroTier : http://<本机IP>:7788/
 ```
 
-启动窗口会打印可复制的地址。要精确指定监听地址（比如只放 ZeroTier），**推荐直接在「配置」页改**
+> `0.0.0.0` 是**监听地址**，不是你能在浏览器里敲的地址——浏览器要敲具体那张网卡的 IP，
+> 启动窗口已经替你列好了。`http://0.0.0.0:7788` 只有部分系统能打开，别拿它发给别人。
+
+**默认无口令**，这套东西跑在 ZeroTier / 内网里，都是自己人，直接敲地址就能进。
+要精确指定只听哪几张网卡（比如只放 ZeroTier、不放公网那张），**推荐直接在「配置」页改**
 （写进 `config.json`，重启生效）；临时试一次也可以用环境变量：
 
 ```bat
-set COOP_CONSOLE_HOST=127.0.0.1,10.5.218.11
+set COOP_CONSOLE_HOST=127.0.0.1,192.168.1.10
 node server.js
 ```
 
-**换端口**（第一个参数是模式，第二个是端口）：
+`host` 的三种写法：
+
+| 值 | 含义 |
+|---|---|
+| `0.0.0.0`（默认） | 全网卡，不做来源过滤 |
+| `127.0.0.1` | 只本机 |
+| `auto` | 只监听回环 + 私有网段（`10.x` / `172.16–31.x` / `192.168.x` / `100.64–127.x`），公网网卡不放 |
+| `127.0.0.1,192.168.1.10` | 逗号分隔，精确指定只听这几个地址 |
+
+**换端口**（`start-console.bat` 的唯一参数就是端口）：
 
 ```bat
-start-console.bat lan 7790
-start-console-lan.bat 7790          :: 等价
+start-console.bat 7790
 ```
 
-> 这两个参数现在都只是**兜底默认**：`config.json` 里写了 `port`/`host` 就以文件为准。
-> 想让端口固定下来，去「配置」页填一次保存，之后不管双击哪个 bat 都用那个端口。
+> 端口只是**兜底默认**：`config.json` 里写了 `port` 就以文件为准。
+> 想让端口固定下来，去「配置」页填一次保存，之后双击 bat 都用那个端口。
 
 用途很具体：主控制台正在跑游戏服务端时，要开第二个面板看日志/玩家档案又不能动它，
 就用另一个端口起一个**只读实例**——它不持有游戏进程，顶栏会标"外部实例"，
 **别在那个窗口点「强制结束」，那会把真正在跑的服务端杀掉**。
 
-> ⚠️ 无口令意味着**同网段任何人打开地址就能起停服务器、恢复存档、删备份**。自己人的网络无所谓；
-> 哪天要放到不受信任的环境，启动前设一个口令即可：`set COOP_CONSOLE_TOKEN=你的口令`。
+> ⚠️ 无口令 + 全网卡监听意味着**任何能连上这台机器的人打开地址就能起停服务器、恢复存档、删备份**。
+> 自己人的网络无所谓；哪天要放到不受信任的环境，启动前设一个口令即可：`set COOP_CONSOLE_TOKEN=你的口令`。
 > 开启后支持 `?token=` / `Cookie: coop_console_token=…` / `X-Console-Token` 头三种带法，
-> 地址栏带一次 token 会写入一年期 Cookie，之后不用再拼。
+> 地址栏带一次 token 会写入一年期 Cookie，之后不用再拼。更稳妥的做法是把 `host` 收成 `auto`
+> 或写死内网地址，别让公网网卡暴露出去。
 
 > 若换一台**开着防火墙**的机器，还要放行 TCP 7788：以管理员身份运行 `open-firewall.bat`
 > （它同时会放行游戏用的 UDP 4200）。当前这台机器三个防火墙配置文件都是关闭状态，无需放行。
@@ -392,22 +402,24 @@ node tools/ptyprobe.js 100       :: 换机自检：PTY 能不能跑到 SERVING�
 
 | 写法 | 含义 | 优先级 |
 |---|---|---|
-| `node server.js --lan` | 兜底地址 = `auto` | **低于** config.json |
 | `node server.js --local` | 兜底地址 = `127.0.0.1` | **低于** config.json |
 | `node server.js --port 7790` | 这一次就用 7790 | **高于** config.json |
-| `node server.js --host 10.0.0.5` | 这一次就监听这个地址 | **高于** config.json |
+| `node server.js --host 192.168.1.10` | 这一次就监听这个地址 | **高于** config.json |
 
-理由：`--lan` 只是「没配置时的默认倾向」，配置文件当然该赢；而 `--port 7790` 是敲黑板点名的值，
+理由：`--local` 只是「没配置时的默认倾向」，配置文件当然该赢；而 `--port 7790` 是敲黑板点名的值，
 被文件顶掉才叫意外（开副面板就靠它，两个实例不能抢同一个端口）。
+
+> 以前还有个 `--lan`（兜底 `auto`）。**它已经删了** —— 因为默认监听地址改成 `0.0.0.0` 之后，
+> 全网卡本来就已经听得见，`--lan` 反而会缩窄范围。想缩窄请去 `config.json` 写 `"host": "auto"`。
 
 于是两条链路：
 
 ```
 端口   : 环境变量 > --port > config.json > 默认 7788
-监听地址: 环境变量 > --host > config.json > --lan/--local > 默认 127.0.0.1
+监听地址: 环境变量 > --host > config.json > --local > 默认 0.0.0.0
 ```
 
-启动横幅会把来源打出来（`监听来源 : 地址 = 命令行 --lan…，端口 = 内置默认值`），
+启动横幅会把来源打出来（`监听来源 : 地址 = 内置默认值（全网卡），端口 = 命令行 --port…`），
 页面上每栏的 hint 也会带一句「当前值来自 …」。
 
 新增/修改 bat 时的自查：
@@ -416,9 +428,10 @@ node tools/ptyprobe.js 100       :: 换机自检：PTY 能不能跑到 SERVING�
 rem 反面教材 -- 别写
 set "COOP_CONSOLE_HOST=auto"
 
-rem 正确 -- 交给 config.json 决定，这里只给兜底
-set "MODEARG=--lan"
-"%NODE%" server.js %MODEARG% %PORTARG%
+rem 正确 -- 交给 config.json 决定，这里只给端口兜底
+set "PORTARG="
+if not "%~1"=="" set "PORTARG=--port %~1"
+"%NODE%" server.js %PORTARG%
 ```
 
 顺带：`open-firewall.bat` 也支持传端口了（`open-firewall.bat [控制台端口] [游戏端口]`，
@@ -663,7 +676,7 @@ node tools/make-players-preview.js
 想不打断游戏又看一眼新页面，用备用端口起个只读实例：
 
 ```bat
-start-console-lan.bat 7790
+start-console.bat 7790
 ```
 
 ### 中文译名是怎么来的

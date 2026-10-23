@@ -335,14 +335,16 @@ C:\Users\你的用户名\Documents\Mount and Blade II Bannerlord\CoopData\
   监听      : 0.0.0.0:7788（对外）
   监听来源  : 地址 = 内置默认值，端口 = 内置默认值（改 config.json 后重启生效）
   本机打开  : http://127.0.0.1:7788/
-  局域网    : http://192.168.1.23:7788/
-  ZeroTier : http://10.5.218.11:7788/   [ZeroTier One]
+  局域网    : http://&lt;本机IP&gt;:7788/          [WLAN]
+  ZeroTier : http://&lt;本机IP&gt;:7788/          [ZeroTier One]
 </pre>
   <div class="note">
-    <b>不要关这个黑窗口。</b>服务端跑在它的伪终端里，窗口关掉 = 服务器一起停。
-    想长期挂机见第 08 节。
+    <p><code>0.0.0.0</code> 是<b>监听地址</b>，不是给你在浏览器里敲的。浏览器要敲具体那张网卡的 IP，
+    上面几行已经替你列好了。<b>默认全网卡监听，不按来源 IP 过滤</b> —— 谁能连上这台机器的 7788
+    端口，谁就能打开面板。要缩窄范围请看第 09 节的 <code>host</code> 说明。</p>
+    <p><b>不要关这个黑窗口。</b>服务端跑在它的伪终端里，窗口关掉 = 服务器一起停。
+    想长期挂机见第 08 节。</p>
   </div>
-
   <h3>第 4 步：打开控制台并启动服务器</h3>
   <ol>
     <li>浏览器打开 <code>http://127.0.0.1:7788</code>；</li>
@@ -571,8 +573,8 @@ open-firewall.bat 7788 4200  <span class="c">:: 自定义端口时显式指定</
 <pre>{
   // 服务端装在哪
   "root": "D:\\SteamLibrary\\steamapps\\common\\Mount &amp; Blade II Bannerlord",
-  // 只给自己用就改成 127.0.0.1
-  "host": "auto",
+  // 默认全网卡；只想给局域网就改成 auto，只给自己用就改成 127.0.0.1
+  "host": "0.0.0.0",
   "port": 7788,
 }</pre>
 
@@ -583,7 +585,7 @@ open-firewall.bat 7788 4200  <span class="c">:: 自定义端口时显式指定</
     <tr><td><code>auto</code></td><td>回环 + 所有<b>私有网段</b>（10.x / 172.16–31.x / 192.168.x / 100.64–127.x），
       <b>公网 IP 不自动放</b>。最稳妥的对外方式。</td></tr>
     <tr><td><code>127.0.0.1</code></td><td>只有本机能访问，别人打不开。</td></tr>
-    <tr><td><code>127.0.0.1,10.5.1.2</code></td><td>逗号分隔，精确指定只听哪几个地址。</td></tr>
+    <tr><td><code>127.0.0.1,192.168.1.10</code></td><td>逗号分隔，精确指定只听哪几个地址。</td></tr>
   </table>
 
   <h3>优先级（重要）</h3>
@@ -599,14 +601,18 @@ open-firewall.bat 7788 4200  <span class="c">:: 自定义端口时显式指定</
   <h3>命令行参数</h3>
   <table>
     <tr><th style="width:150px">参数</th><th>作用</th><th>优先级</th></tr>
-    <tr><td><code>local</code></td><td>只监听 127.0.0.1</td><td>低于 config.json</td></tr>
-    <tr><td><code>lan</code></td><td>只监听回环 + 私有网段</td><td>低于 config.json</td></tr>
+    <tr><td><code>--local</code></td><td>只监听 127.0.0.1（兜底默认值）</td><td>低于 config.json</td></tr>
+    <tr><td><code>--host 192.168.1.10</code></td><td>这一次就监听指定地址</td><td><b>高于</b> config.json</td></tr>
     <tr><td><code>--port 7790</code></td><td>使用指定端口</td><td><b>高于</b> config.json</td></tr>
   </table>
-  <pre>start-console.bat              <span class="c">:: 0.0.0.0:7788（默认）</span>
-start-console.bat local        <span class="c">:: 只本机</span>
-start-console.bat lan          <span class="c">:: 局域网 / ZeroTier</span>
-start-console.bat 7790         <span class="c">:: 换端口（用于开第二个只读面板）</span></pre>
+  <pre>start-console.bat              <span class="c">:: 0.0.0.0:7788（默认，全网卡）</span>
+start-console.bat 7790         <span class="c">:: 换端口（用于开第二个只读面板）</span>
+node server.js --local         <span class="c">:: 只本机</span></pre>
+  <div class="note">
+    以前还有一个 <code>lan</code> 模式和配套的 <code>start-console-lan.bat</code>，<b>已经删除</b>。
+    默认监听地址改成 <code>0.0.0.0</code> 之后，全网卡本来就已经听得见，不需要再开第二个开关；
+    想缩窄监听范围请改 <code>config.json</code> 的 <code>host</code>（填 <code>auto</code> 即回环 + 私有网段）。
+  </div>
   <div class="note">
     <b>开第二个面板：</b>主控制台正在跑服务器、不想动它，可以另起一个实例用不同端口
     指向同一份日志。<code>--port</code> 之所以优先级高于配置文件，就是为了这个场景。
@@ -767,8 +773,7 @@ start-console.bat</pre>
 <section>
   <h2><span class="num">11</span>压缩包内容清单</h2>
   <pre>CoopConsole\
-├─ start-console.bat        启动控制台（默认 0.0.0.0:7788）
-├─ start-console-lan.bat    只监听局域网 / ZeroTier
+├─ start-console.bat        启动控制台（默认 0.0.0.0:7788，全网卡）
 ├─ open-firewall.bat        放行 TCP 7788 + UDP 4200（需管理员）
 ├─ server.js                控制台主程序
 ├─ package.json
@@ -785,7 +790,7 @@ start-console.bat</pre>
   <ol>
     <li><code>node lib\config.js</code> —— 确认三个路径都是 ✓；</li>
     <li>双击 <code>start-console.bat</code> —— 确认窗口里打印出了可访问地址；</li>
-    <li>浏览器进「配置」页 —— 按自己的网络环境把监听地址改成 <code>auto</code> 或 <code>127.0.0.1</code>。</li>
+    <li>浏览器进「配置」页 —— 按自己的网络环境把监听地址改成 <code>auto</code>（只放内网）或 <code>127.0.0.1</code>（只本机）。</li>
   </ol>
 
   <div class="note">

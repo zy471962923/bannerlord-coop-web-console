@@ -107,43 +107,52 @@ check('路径缺失时 check() 给出可执行的提示', () => {
   assert.ok(issues.every((i) => i.msg && i.hint), '每条问题都要带 msg + hint');
 });
 
-check('--lan / --local 只是模式兜底：config.json 没写 host 时才生效', () => {
+check('--local 只是模式兜底：config.json 没写 host 时才生效', () => {
   const empty = path.join(tmpRoot, 'empty.json');
   fs.writeFileSync(empty, '{}\n');
-  const a = resolveArgv({ COOP_CONSOLE_CONFIG: empty, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' }, ['--lan']);
-  assert.strictEqual(a.httpHost, 'auto', '--lan 没被当成兜底地址: ' + a.httpHost);
-  assert.ok(a.httpHostSource.indexOf('命令行') === 0, '来源应标成命令行: ' + a.httpHostSource);
   const b = resolveArgv({ COOP_CONSOLE_CONFIG: empty, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' }, ['--local']);
   assert.strictEqual(b.httpHost, '127.0.0.1');
+  assert.ok(b.httpHostSource.indexOf('命令行') === 0, '来源应标成命令行: ' + b.httpHostSource);
   // 什么都不传时用内置默认 0.0.0.0（发布版：解压就能被别人打开）
   const c = resolveArgv({ COOP_CONSOLE_CONFIG: empty, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' }, []);
   assert.strictEqual(c.httpHost, '0.0.0.0', '无参数时应监听所有网卡: ' + c.httpHost);
   assert.strictEqual(c.httpHostSource, '内置默认值');
 });
 
+check('--lan 已废弃：传了也不该改变监听地址（默认本来就是 0.0.0.0）', () => {
+  const empty = path.join(tmpRoot, 'empty.json');
+  fs.writeFileSync(empty, '{}\n');
+  const a = resolveArgv({ COOP_CONSOLE_CONFIG: empty, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' }, ['--lan']);
+  assert.strictEqual(a.httpHost, '0.0.0.0', '--lan 不该再缩窄范围: ' + a.httpHost);
+  assert.strictEqual(a.httpHostSource, '内置默认值', '--lan 不该产生地址来源: ' + a.httpHostSource);
+});
+
 check('--port 是显式值：压过 config.json（开副面板就靠这个）', () => {
   const f = path.join(tmpRoot, 'hasport.json');
   fs.writeFileSync(f, '{"port": 8080}\n');
   const a = resolveArgv({ COOP_CONSOLE_CONFIG: f, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' },
-    ['--lan', '--port', '7790']);
+    ['--local', '--port', '7790']);
   assert.strictEqual(a.httpPort, 7790, '--port 该赢过文件里的 8080: ' + a.httpPort);
   assert.ok(a.httpPortSource.indexOf('命令行') === 0, '来源应为命令行: ' + a.httpPortSource);
   const b = resolveArgv({ COOP_CONSOLE_CONFIG: f, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' },
     ['--port=7791']);
   assert.strictEqual(b.httpPort, 7791, '--port=N 写法没生效: ' + b.httpPort);
   // 不带 --port 时文件说了算
-  const c = resolveArgv({ COOP_CONSOLE_CONFIG: f, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' }, ['--lan']);
+  const c = resolveArgv({ COOP_CONSOLE_CONFIG: f, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' }, ['--local']);
   assert.strictEqual(c.httpPort, 8080, '文件端口该赢过默认值: ' + c.httpPort);
   assert.ok(c.httpPortSource.indexOf('config.json') === 0, '来源应为 config.json: ' + c.httpPortSource);
 });
 
-check('config.json 的 host 压过 --lan（模式参数压不过文件）', () => {
+check('config.json 的 host 压过 --local（模式参数压不过文件）', () => {
   const f = path.join(tmpRoot, 'hashost.json');
   fs.writeFileSync(f, '{"host": "127.0.0.1"}\n');
   const c = resolveArgv({ COOP_CONSOLE_CONFIG: f, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' },
-    ['--lan']);
-  assert.strictEqual(c.httpHost, '127.0.0.1', '文件里的 host 该赢: ' + c.httpHost);
-  assert.ok(c.httpHostSource.indexOf('config.json') === 0, '来源应为 config.json: ' + c.httpHostSource);
+    ['--local', '--host', '192.168.1.10']);
+  assert.strictEqual(c.httpHost, '192.168.1.10', '--host 是显式值，该压过文件: ' + c.httpHost);
+  const d = resolveArgv({ COOP_CONSOLE_CONFIG: f, COOP_CONSOLE_PORT: '', COOP_CONSOLE_HOST: '' },
+    ['--local']);
+  assert.strictEqual(d.httpHost, '127.0.0.1', '文件里的 host 该赢过 --local: ' + d.httpHost);
+  assert.ok(d.httpHostSource.indexOf('config.json') === 0, '来源应为 config.json: ' + d.httpHostSource);
 });
 
 check('环境变量仍然压过 config.json 和命令行', () => {

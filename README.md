@@ -1,21 +1,51 @@
 # Bannerlord Coop 服务器 Web 控制台
 
-一个跑在本机的运维面板：实时日志、TUI 镜像、玩家档案（含装备/部队/技能详情）、起停服务器、存档备份、命令快捷按钮、更新日志。
+![version](https://img.shields.io/badge/version-1.0.0-blue)
+![platform](https://img.shields.io/badge/platform-Windows%2064--bit-lightgrey)
+![license](https://img.shields.io/badge/license-MIT-green)
+
+[Bannerlord Coop](https://github.com/Bannerlord-Coop-Team/BannerlordCoop) 专用服务器的浏览器运维面板：
+实时日志、TUI 镜像、玩家档案（装备 / 部队 / 技能）、全图玩家位置、起停服务器、存档备份、命令台、更新日志。
+
 零前端框架、零构建步骤，唯一外部依赖是 `node-pty`。
 
-启动：双击 `start-console.bat`（仅本机）或 `start-console-lan.bat`（局域网 / ZeroTier 可访问），或
+![玩家档案](docs/shots/03-players.png)
+
+![全图玩家位置](docs/shots/04-map.png)
+
+## 快速开始
+
+**用现成的包**：下载 [Releases](../../releases) 里的 zip，解压 → 双击 `start-console.bat` → 浏览器打开
+**http://127.0.0.1:7788**。zip 里已经带了 Node 运行时，不需要安装任何东西。
+
+**从源码跑**（需要 Node 18+）：
 
 ```bat
-cd /d F:\BannerlordCoopServer\workspace\骑马与砍杀多人服务器\web-console
-node server.js                          :: 仅本机
-set COOP_CONSOLE_HOST=auto && node server.js   :: 对外监听
+npm install
+node server.js                :: 监听 0.0.0.0:7788（所有网卡）
+node server.js --local        :: 只本机 127.0.0.1
+node server.js --lan 7790     :: 局域网 / ZeroTier，自定义端口
 ```
 
-然后浏览器打开 **http://127.0.0.1:7788**
+首次启动后到「配置」标签填两个路径（服务端安装目录 / 存档目录），保存并重启控制台。
+路径填错卡片下面会标红，不用猜。
 
 > ⚠️ **服务端跑在控制台的伪终端里 —— 关掉控制台窗口，服务器会一起停。**
 > 想长期挂机不占浏览器，就照旧双击 `start-server.bat`，控制台仍可打开当只读面板
 > （顶栏会标"外部实例"，能看日志、能强制结束，但下发不了命令）。
+
+## 界面
+
+| | |
+|---|---|
+| ![实时日志](docs/shots/01-log.png) | ![TUI 镜像](docs/shots/02-tui.png) |
+| 实时日志（等级/关键字过滤、一键下载） | TUI 镜像（方块界面原样还原） |
+| ![玩家档案](docs/shots/03-players.png) | ![全图玩家位置](docs/shots/04-map.png) |
+| 玩家档案 | 全图玩家位置 |
+| ![命令台](docs/shots/05-cmd.png) | ![配置页](docs/shots/08-config.png) |
+| 命令台（136 条命令全集） | 配置页（可编辑 + 路径校验） |
+
+完整使用手册：[`docs/manual.html`](docs/manual.html)（12 章，A4 排版，可直接打印成 PDF）。
 
 ---
 
@@ -45,6 +75,9 @@ web-console/
 ├─ start-console.bat          仅本机
 ├─ start-console-lan.bat      对外监听（auto：回环 + 私有网段）
 ├─ open-firewall.bat          管理员放行 TCP 7788 / UDP 4200（换机才需要）
+├─ node.exe                   仅发布包里有（绿色版运行时，源码库里没有）
+├─ INSTALL.txt                仅发布包里有（给玩家的安装说明）
+├─ QUICKSTART.txt             仅发布包里有（一页速查）
 ├─ config.json                本机配置（自己生成，可不存在；node lib/config.js --init）
 ├─ config.example.json        配置示例（带注释，分发给别人时看这个）
 ├─ lib/
@@ -69,12 +102,13 @@ web-console/
 ├─ data/
 │  ├─ commands.json           7 条内置 + 136 条游戏命令（服务端启动时会自动刷新）
 │  └─ changelog.json          GitHub Releases 缓存
-├─ preview/
+├─ preview/                   本地调试用的静态快照（生成物，不入库）
 │  ├─ players-preview.html         玩家档案名册的静态快照（单文件，双击就能看，不用起服务）
 │  ├─ players-detail-preview.html  玩家详情页的静态快照（同上）
 │  └─ map-preview.html             「地图」菜单的静态快照（同上）
 └─ tools/
    ├─ fetch-changelog.js      抓更新日志
+   ├─ build-release.js        打包：生成发布目录 + 内置 node.exe + 打 zip；也生成可推送的源码目录
    ├─ test-parser.js          状态解析回归测试
    ├─ test-term.js            TUI 模拟器回归测试（无浏览器）
    ├─ test-players.js         玩家档案数据层测试（直接吃真实存档）
@@ -683,3 +717,32 @@ perk 说明同理，而且更绕：`PerkObject.Description` 只是
 页面会提示「技能树读取失败」，控制台日志里则是
 `playersLib.perkCatalog is not a function`。
 
+
+---
+
+## 许可与致谢
+
+本项目 **MIT** 许可（见 [LICENSE](LICENSE)），可自由转载、修改、二次分发，请保留致谢。
+
+### 这不是一个独立的游戏
+
+它只是 Bannerlord Coop 专用服务器的一个外挂式控制台，**不含任何游戏本体资源**，
+不修改游戏内存、不注入进程。它确实能下发作弊 / 踢人 / 关服命令 —— 那是因为服务端允许，
+权限给多大请自己把关。
+
+### 第三方
+
+| 项目 | 说明 |
+|---|---|
+| [Bannerlord Coop](https://github.com/Bannerlord-Coop-Team/BannerlordCoop) | 联机模组与专用服务器本体，本工具针对 v0.1.6（配对提交 `5f4d63c`）适配 |
+| TaleWorlds | 《骑马与砍杀 2：霸主》及其专用服务器 |
+| [node-pty](https://github.com/microsoft/node-pty) | 伪终端（ConPTY）绑定，MIT |
+| 卡拉迪亚底图 | Map by **Vesper** — "Calradia 1084"，来自 TaleWorlds 官方论坛，作者允许署名使用 |
+| 中文译名 | 取自官方简体中文语言包 |
+
+底图是别人做的，用之前请先看一眼原作者的授权说明。
+
+### 反馈
+
+提 [Issue](../../issues) 请带上三样：① 控制台窗口里的报错截图；②「TUI 镜像」最后 20 行；
+③ `node lib\config.js` 的输出。有这三样，绝大多数问题一眼能定位。

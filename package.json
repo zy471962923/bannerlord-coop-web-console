@@ -1,1 +1,28 @@
-{"name":"coop-web-console","version":"1.0.0","private":true,"dependencies":{"node-pty":"^1.1.0"}}
+{
+  "name": "bannerlord-coop-web-console",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bannerlord Coop 专用服务器的浏览器运维面板：实时日志、TUI 镜像、玩家档案、全图位置、存档备份",
+  "keywords": [
+    "bannerlord",
+    "mount-and-blade",
+    "coop",
+    "dedicated-server",
+    "web-console",
+    "node-pty"
+  ],
+  "license": "MIT",
+  "author": "Corvus.Jazz",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tools/test-parser.js && node tools/test-term.js && node tools/test-config.js && node tools/test-console-config.js && node tools/test-config-page.js",
+    "build:release": "node tools/build-release.js --zip"
+  },
+  "dependencies": {
+    "node-pty": "^1.1.0"
+  }
+}

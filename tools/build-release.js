@@ -448,7 +448,7 @@ const SRC_FILES = [
   'open-firewall.bat',
   'README.md',
 ];
-const SRC_DIRS = ['lib', 'public', 'tools'];
+const SRC_DIRS = ['lib', 'public', 'tools', '.github'];
 // 手册源文件与截图进仓库（PDF 是生成物，不进）
 const SRC_DOCS = ['docs/manual.html'];
 

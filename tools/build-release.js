@@ -1,21 +1,20 @@
 'use strict';
 // 一键整理「发布包」和「源码仓库」两份产物：
 //
-//   ..\dist\release\CoopConsole\     可直接双击运行的运行时（node_modules 已裁到 3MB 以内）
-//   ..\dist\release\CoopConsole-v<ver>.zip            主包
-//   ..\dist\release\第一步安装nodejs环境.zip           只有 node.exe（约 80MB，必须单独传）
+//   ..\dist\release\CoopConsole\     可直接双击运行的运行时（含 node.exe 与裁剪过的 node_modules）
+//   ..\dist\release\CoopConsole-v<ver>.zip            发布包（约 40MB，一个包搞定）
 //   ..\dist\source\                  可 git init / push 的源码目录（.gitignore 已写好）
 //
 // 用法：
 //   node tools/build-release.js              两样都做（默认）
 //   node tools/build-release.js --release    只做发布目录
 //   node tools/build-release.js --source     只做源码目录
-//   node tools/build-release.js --zip        顺便打包（主包 + 第一步的 node 包）
-//   node tools/build-release.js --zip --no-node   只打主包，不打 node.exe
+//   node tools/build-release.js --zip        顺便打成 zip
+//   node tools/build-release.js --no-node    不内置 node.exe（包会小到 9MB，但对方要自己装 Node）
 //   node tools/build-release.js --keep       不先清空目标目录（增量覆盖）
 //   node tools/build-release.js --check      只校验现有的发布包
 //
-// node.exe 打包来源：默认就用当前跑构建的这个 node（process.execPath），
+// node.exe 来源：默认就用当前跑构建的这个 node（process.execPath），
 // 想换成别的版本：set COOP_NODE_EXE=D:\node22\node.exe 再跑。
 //
 // 为什么 node_modules 要手工裁：
@@ -41,10 +40,9 @@ const PKG = JSON.parse(fs.readFileSync(path.join(CONSOLE_DIR, 'package.json'), '
 const VERSION = PKG.version || '1.0.0';
 const ZIP_NAME = 'CoopConsole-v' + VERSION + '.zip';
 
-// 「第一步」那个包：内容是跑构建的这个 node.exe
+// node.exe：直接打进主包根目录，玩家解压就能双击，不用另下一个包
 // （想指定别的版本：set COOP_NODE_EXE=D:\path\node.exe 再跑）
 const NODE_EXE = process.env.COOP_NODE_EXE || process.execPath;
-const NODE_ZIP_NAME = '第一步安装nodejs环境.zip';
 
 const ARGV = process.argv.slice(2);
 const has = (n) => ARGV.includes(n);
@@ -226,28 +224,22 @@ function installText() {
     'Bannerlord Coop 服务器网页控制台 —— 安装说明',
     '================================================',
     '',
-    '一共两个压缩包，按顺序来。',
+    '解压就能用，不需要安装任何东西。',
     '',
     '',
-    '━━ 第一步：准备运行环境 ━━',
+    '━━ 第一步：解压 ━━',
     '',
-    '解压「第一步安装nodejs环境.zip」，里面就一个 node.exe。',
+    '把压缩包整个解压到任意一个文件夹，比如 D:\\CoopConsole。',
     '',
-    '把 node.exe 放进 CoopConsole 文件夹，也就是 start-console.bat 旁边。',
-    '',
-    '放好之后应该是这样：',
-    '',
-    '    CoopConsole\\',
-    '        node.exe            <= 刚放进去的',
-    '        start-console.bat',
+    '    D:\\CoopConsole\\',
+    '        start-console.bat     <= 双击这个',
+    '        node.exe              运行环境，已经放好了，不用管',
     '        server.js',
     '        lib\\',
     '        docs\\',
     '        ...',
     '',
-    '放完就不用管了。不用安装、不用设置、不用重启电脑。',
-    '',
-    '（如果这台电脑本来就装过 Node.js，这一步可以跳过，程序会自己找到。）',
+    '不要只把 start-console.bat 单独拖出来，要整个文件夹一起用。',
     '',
     '',
     '━━ 第二步：启动 ━━',
@@ -256,7 +248,7 @@ function installText() {
     '',
     '窗口里出现这两行就说明起来了：',
     '',
-    '    [node]  ...\\node.exe',
+    '    [node]  D:\\CoopConsole\\node.exe',
     '    本机打开  : http://127.0.0.1:7788/',
     '',
     '浏览器打开这个地址就能看到面板。',
@@ -281,8 +273,8 @@ function installText() {
     '━━ 常见问题 ━━',
     '',
     '· 双击 bat 一闪就没了',
-    '    → node.exe 没放到位置。检查一下是不是放进了「第一步」那个解压文件夹里，',
-    '      而不是放进 CoopConsole 里面。',
+    '    → 文件夹没解压完整。重新解压一次，注意要整个文件夹一起解压，',
+    '      别只拖 start-console.bat 出来。',
     '',
     '· 窗口里说端口被占用',
     '    → 已经有一个控制台在跑了。想再开一个只读面板：',
@@ -298,45 +290,16 @@ function installText() {
   ].join('\n');
 }
 
-// 第一步那个包里的说明，跟 node.exe 放一起
-function nodeHowtoText() {
-  return [
-    '这里只有一个文件：node.exe',
-    '',
-    '这是控制台运行需要的环境，绿色版，不用安装。',
-    '',
-    '用法：把 node.exe 复制到 CoopConsole 文件夹里',
-    '      （就是 start-console.bat 所在的那个文件夹）。',
-    '',
-    '    CoopConsole\\',
-    '        node.exe            <= 放这里',
-    '        start-console.bat',
-    '        server.js',
-    '        ...',
-    '',
-    '放好之后双击 start-console.bat 就能用了。',
-    '',
-    '如果这台电脑本来装过 Node.js，这个文件可以不用，直接双击',
-    'start-console.bat 也行 —— 程序会自己找到系统里的 Node。',
-    '',
-  ].join('\n');
-}
-
 function quickstartText() {
   return [
     'Bannerlord Coop 服务器 Web 控制台 v' + VERSION + '  ——  快速上手',
     '================================================================',
     '',
-    '【一、把 node.exe 放进来】',
-    '  解压「第一步安装nodejs环境.zip」，里面只有一个 node.exe。',
-    '  把它复制到本文件夹（跟 start-console.bat 放在一起）：',
+    '【一、解压】',
+    '  把压缩包整个解压到一个文件夹（例如 D:\\CoopConsole），然后双击 start-console.bat。',
+    '  运行环境 node.exe 已经在包里放好了，不用装任何东西。',
     '',
-    '      CoopConsole\\',
-    '          node.exe            <= 放这里',
-    '          start-console.bat',
-    '          server.js ...',
-    '',
-    '  不用安装、不用设置。这台电脑本来装过 Node.js 的话，这一步可以跳过。',
+    '  注意整个文件夹要一起用，不要只把 start-console.bat 单独拖出来。',
     '',
     '【二、启动】',
     '  双击 start-console.bat',
@@ -428,12 +391,12 @@ function releaseReadme() {
     '',
     '## 三步跑起来',
     '',
-    '1. 解压「第一步安装nodejs环境.zip」，把里面的 `node.exe` 放进本文件夹（跟 `start-console.bat` 并排）',
+    '1. 解压到任意文件夹（例如 `D:\\CoopConsole`），**整个文件夹一起用**',
     '2. 双击 `start-console.bat`',
     '3. 浏览器打开 <http://127.0.0.1:7788>',
     '',
+    '不用装 Node.js、不用 npm install —— `node.exe` 和依赖都在包里。',
     '详细步骤见 `INSTALL.txt`，完整手册见 `docs/` 里的 PDF（带全部界面截图）。',
-    '这台机器本来装过 Node.js 的话，第 1 步可以跳过。',
     '',
     '## 命令',
     '',
@@ -451,7 +414,7 @@ function releaseReadme() {
     '',
     '```',
     'CoopConsole\\',
-    '  node.exe               ← 从「第一步」包里拷进来，本包不自带',
+    '  node.exe               运行环境（绿色版，解压即用）',
     '  server.js              HTTP 服务 + 路由',
     '  lib\\                   配置探测、PTY 进程、日志跟随、玩家/存档/地图解析',
     '  public\\                前端（原生 JS，无构建）',
@@ -465,7 +428,7 @@ function releaseReadme() {
     '## 注意',
     '',
     '- 服务端跑在控制台的伪终端里，**关掉控制台窗口游戏服务器会一起停**。',
-    '- 本包只带 Windows 64 位依赖，其它平台请自己 `npm install`。',
+    '- 包里的 `node.exe` 与依赖都只有 Windows 64 位版，其它平台跑不了（要用请自己 `npm install`）。',
     '- 重要存档请先备份。本工具能执行踢人/关服/作弊命令，给谁用请自己把关。',
     '',
     '本控制台可自由转载、二次修改与分发，请保留 `docs` 里的致谢。',
@@ -560,6 +523,7 @@ function gitignoreText() {
 function checkFiles() {
   hr('校验发布包');
   const need = [
+    'node.exe',
     'server.js',
     'package.json',
     'lib/config.js',
@@ -596,6 +560,9 @@ function checkFiles() {
 function checkPty() {
   const ptyPath = path.join(REL_APP, 'node_modules', 'node-pty');
   const outFile = path.join(REL_DIR, '.ptyprobe.json');
+  // 优先用包里那个 node.exe 跑，这样验的是「玩家拿到的运行时 + 玩家拿到的 node-pty」
+  const bundled = path.join(REL_APP, 'node.exe');
+  const runner = fs.existsSync(bundled) ? bundled : process.execPath;
   rmrf(outFile);
   const script = [
     'const fs = require("fs");',
@@ -608,7 +575,7 @@ function checkPty() {
     'setTimeout(function () { done({ exitCode: -1, hit: false, timeout: true }); }, 12000);',
   ].join('\n');
   try {
-    execFileSync(process.execPath, ['-e', script], {
+    execFileSync(runner, ['-e', script], {
       timeout: 20000,
       stdio: 'ignore',
       windowsHide: true,
@@ -621,7 +588,8 @@ function checkPty() {
   rmrf(outFile);
   if (!r) { log('  [失败] node-pty spawn 没有返回结果'); return false; }
   const ok = r.exitCode === 0 && r.hit;
-  log('  ' + (ok ? '[OK]  ' : '[失败] ') + 'node-pty spawn（裁剪后可用） exit=' + r.exitCode +
+  log('  ' + (ok ? '[OK]  ' : '[失败] ') + 'node-pty spawn（' +
+    (runner === bundled ? '包内 node.exe' : '构建用 node') + '） exit=' + r.exitCode +
     (r.timeout ? ' 超时' : ''));
   return ok;
 }
@@ -668,17 +636,17 @@ function makeZip() {
   log('  ' + mb(fs.statSync(zipPath).size));
 }
 
-// 「第一步」包：只有一个 node.exe + 一份说明。
-// 为什么不并进主包：node.exe 单文件 80 MB，塞进去主包会从 9 MB 涨到 40 MB，
-// 一方面 BBS 附件有大小上限，另一方面不想为了一个绿色 exe 让所有人多下 30 MB。
-// 拆成两个包后，本来装过 Node.js 的人可以完全跳过第一个。
-function makeNodeZip() {
-  hr('打包 node 运行时 → ' + NODE_ZIP_NAME);
+// 把 node.exe 直接放进主包根目录（跟 start-console.bat 并排）。
+//
+// 一开始是拆成「第一步」单独一个包的，后来用户明确要求合并：
+// 玩家不懂这些，多一个包就多一步「放到哪」的困惑，宁可包大一点。
+// start-console.bat 第一顺位就是找 %~dp0node.exe，所以放根目录即可，不用改脚本。
+function copyNodeInto(targetDir) {
+  hr('内置 node 运行时');
   if (!fs.existsSync(NODE_EXE)) {
-    log('  [警告] 找不到 ' + NODE_EXE + '，跳过。可用 COOP_NODE_EXE 指定。');
+    log('  [警告] 找不到 ' + NODE_EXE + '，包内将不自带 node.exe。可用 COOP_NODE_EXE 指定。');
     return false;
   }
-  const stage = path.join(REL_DIR, '_nodepkg');
 
   // 先验源文件能跑，再拷 —— 反过来（先拷再跑拷贝）会让 Windows 锁住目标文件，压缩时报占用
   let ver = '';
@@ -689,17 +657,17 @@ function makeNodeZip() {
     return false;
   }
 
-  rmrf(stage);
-  fs.mkdirSync(stage, { recursive: true });
-  copyTree(NODE_EXE, path.join(stage, 'node.exe'));
-  write(stage, '放哪里.txt', nodeHowtoText(), { bom: true, crlf: true });
-  log('  node.exe ' + ver + '，' + mb(fs.statSync(path.join(stage, 'node.exe')).size));
-
-  const zipPath = path.join(REL_DIR, NODE_ZIP_NAME);
-  psCompress(path.join(stage, '*'), zipPath);
-  rmrf(stage);
-  log('  ' + zipPath);
-  log('  ' + mb(fs.statSync(zipPath).size) + '（解压后 ' + mb(fs.statSync(NODE_EXE).size) + '）');
+  const dst = path.join(targetDir, 'node.exe');
+  const srcSize = fs.statSync(NODE_EXE).size;
+  let dstSize = 0;
+  try { dstSize = fs.statSync(dst).size; } catch (_) {}
+  if (dstSize === srcSize) {
+    log('  node.exe ' + ver + ' 已在位（' + mb(srcSize) + '），跳过拷贝');
+  } else {
+    rmrf(dst);
+    copyTree(NODE_EXE, dst);
+    log('  node.exe ' + ver + ' → 包内根目录（' + mb(srcSize) + '）');
+  }
   return true;
 }
 
@@ -711,13 +679,11 @@ async function main() {
   log('版本       : v' + VERSION);
 
   if (doRelease) {
-    buildRelease();
+    buildRelease();                              // 会先清空 REL_APP，所以 node.exe 必须在它之后再放
+    if (!has('--no-node')) copyNodeInto(REL_APP);
     const ok = check();
     if (!ok) { process.exitCode = 1; return; }
-    if (doZip) {
-      makeZip();
-      if (!has('--no-node')) makeNodeZip();
-    }
+    if (doZip) makeZip();
     log('\n发布包：' + REL_APP);
   }
   if (doSource) {

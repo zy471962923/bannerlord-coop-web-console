@@ -1,0 +1,29 @@
+// Bannerlord Coop 控制台配置示例。
+// 用法：复制成 config.json 再改（或 node lib/config.js --init 按当前探测结果生成）。
+// 改完重启控制台生效。允许 // 注释和尾逗号。
+// 环境变量优先级更高（COOP_ROOT / COOP_SERVER_DIR / COOP_DATA_DIR / COOP_CONSOLE_PORT ...）。
+{
+  // 服务端安装目录：含 DedicatedServer 子目录的那层
+  "root": "F:\\BannerlordCoopServer",
+
+  // 服务端目录本身；留空则用 root\DedicatedServer。
+  // 如果某人把 DedicatedServer 单独放在别处，直接写这一项，root 可以不管。
+  "serverDir": "",
+
+  // 存档/配置目录（server-config.json、Game Saves 都在这下面）。
+  // 默认是「文档\Mount and Blade II Bannerlord\CoopData」，换用户名/换机器必须对。
+  "coopData": "C:\\Users\\你的用户名\\Documents\\Mount and Blade II Bannerlord\\CoopData",
+
+  // 单独指 savesDir（默认 coopData\DedicatedServer\Game Saves）
+  "savesDir": "",
+
+  // 控制台监听：127.0.0.1 只本机；auto = 回环 + 私有网段（局域网/ZeroTier）
+  "port": 7788,
+  "host": "127.0.0.1",
+
+  // 游戏端口（防火墙要放行 UDP）
+  "gamePort": 4200,
+
+  // 备份放哪（默认：控制台目录下的 backups\）
+  "backupDir": ""
+}

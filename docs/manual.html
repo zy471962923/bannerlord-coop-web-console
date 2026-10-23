@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Bannerlord Coop 专用服务器控制台 · 项目简介与操作手册</title>
+<style>
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }
+  @page { size: A4; margin: 15mm 14mm 15mm 14mm; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    color: #1f2a33; font-size: 10.5pt; line-height: 1.75;
+  }
+  h1, h2, h3, h4 { color: #0b4f57; margin: 0 0 8px; line-height: 1.35; }
+  h2 {
+    font-size: 17pt; margin: 0 0 12px; padding-bottom: 6px;
+    border-bottom: 2.5px solid #4dc9d6;
+  }
+  h2 .num { color: #4dc9d6; margin-right: 8px; }
+  h3 { font-size: 12.5pt; margin: 18px 0 6px; color: #146b74; }
+  h4 { font-size: 11pt; margin: 14px 0 4px; color: #2c3e50; }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0 6px 20px; padding: 0; }
+  li { margin: 3px 0; }
+  code {
+    font-family: Consolas, "Cascadia Mono", monospace; font-size: 9.5pt;
+    background: #eef3f5; color: #0b4f57; padding: 1px 5px; border-radius: 3px;
+  }
+  pre {
+    background: #10202a; color: #d8e6ee; padding: 10px 13px; border-radius: 6px;
+    font-family: Consolas, "Cascadia Mono", monospace; font-size: 9pt;
+    line-height: 1.6; overflow-x: auto; margin: 8px 0; white-space: pre-wrap;
+  }
+  pre .c { color: #6f8b9c; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 8px 0; }
+  th, td { border: 1px solid #cfdde3; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #e8f4f6; color: #0b4f57; font-weight: 600; }
+  tr:nth-child(even) td { background: #f7fafb; }
+  figure { margin: 10px 0 14px; break-inside: avoid; page-break-inside: avoid; }
+  figure img {
+    width: 100%; display: block; border: 1px solid #c3d3da; border-radius: 5px;
+  }
+  figcaption {
+    font-size: 9pt; color: #5a6f7c; margin-top: 5px; text-align: center;
+  }
+  .lead { font-size: 11pt; color: #33475b; }
+  .tip, .warn, .note {
+    border-left: 4px solid #4dc9d6; background: #f2fafb; padding: 8px 12px;
+    margin: 10px 0; font-size: 9.8pt; border-radius: 0 4px 4px 0;
+  }
+  .warn { border-left-color: #e8a33d; background: #fdf7ee; }
+  .note { border-left-color: #8fa9b8; background: #f5f8f9; }
+  .tip b, .warn b, .note b { color: #0b4f57; }
+  .warn b { color: #a86512; }
+
+  /* 封面 */
+  .cover {
+    height: 262mm; display: flex; flex-direction: column; justify-content: center;
+    background: linear-gradient(150deg, #08161d 0%, #0d2b33 45%, #0b4f57 100%);
+    color: #e6f4f7; padding: 0 20mm; margin: -15mm -14mm; 
+    break-after: page; page-break-after: always;
+  }
+  .cover .mark {
+    width: 62px; height: 62px; border-radius: 14px; background: #4dc9d6;
+    color: #06222a; font-size: 26pt; font-weight: 700; display: flex;
+    align-items: center; justify-content: center; margin-bottom: 26px;
+  }
+  .cover h1 { color: #fff; font-size: 30pt; line-height: 1.25; margin: 0 0 10px; }
+  .cover .sub { font-size: 14pt; color: #9fd8e0; margin-bottom: 34px; }
+  .cover .rule { width: 90px; height: 4px; background: #4dc9d6; margin: 0 0 30px; }
+  .cover .meta { font-size: 10.5pt; color: #bcd9e0; line-height: 2.1; }
+  .cover .meta b { color: #fff; font-weight: 600; }
+  .cover .foot { margin-top: 44px; font-size: 9pt; color: #7fa8b4; line-height: 1.9; }
+
+  section { break-before: page; page-break-before: always; }
+  section.first { break-before: auto; page-break-before: auto; }
+  .toc { font-size: 11pt; }
+  .toc div { padding: 5px 0; border-bottom: 1px dotted #cfdde3; }
+  .toc .n { display: inline-block; width: 30px; color: #4dc9d6; font-weight: 700; }
+  .toc small { color: #7b8f9b; }
+  .cols2 { column-count: 2; column-gap: 9mm; }
+  .tag {
+    display: inline-block; font-size: 8.5pt; padding: 0 6px; border-radius: 3px;
+    background: #e8f4f6; color: #0b4f57; margin-right: 5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ 封面 ══════════════ -->
+<div class="cover">
+  <div class="mark">BC</div>
+  <h1>Bannerlord Coop<br>专用服务器控制台</h1>
+  <div class="sub">项目简介 &amp; 操作手册</div>
+  <div class="rule"></div>
+  <div class="meta">
+    适用服务端版本 &nbsp;<b>Bannerlord Coop v0.1.6</b>（配对提交 5f4d63c）<br>
+    适用游戏版本 &nbsp;<b>Mount &amp; Blade II: Bannerlord&nbsp;Native v1.4.8.118999</b><br>
+    控制台版本 &nbsp;<b>v1.0</b><br>
+    文档更新 &nbsp;<b>2026-10-22</b>
+  </div>
+  <div class="foot">
+    一个给《骑马与砍杀 2：霸主》联机专用服用的中文网页控制台。<br>
+    不修改游戏本体，只把服务端的黑窗口和日志变成能点、能看、能查的界面。
+  </div>
+</div>
+
+<!-- ══════════════ 目录 ══════════════ -->
+<section class="first">
+  <h2>目录</h2>
+  <div class="toc">
+    <div><span class="n">01</span>项目简介 <small>这个工具解决什么问题</small></div>
+    <div><span class="n">02</span>功能一览 <small>八个标签页各自干什么</small></div>
+    <div><span class="n">03</span>运行环境 <small>系统、游戏、Node、端口、目录</small></div>
+    <div><span class="n">04</span>安装与首次启动 <small>解压 → 改路径 → 双击 → 打开浏览器</small></div>
+    <div><span class="n">05</span>界面总览 <small>状态栏与八个标签</small></div>
+    <div><span class="n">06</span>各标签详解 <small>配图逐个说明</small></div>
+    <div><span class="n">07</span>配置项 <small>路径、端口、监听地址，以及优先级</small></div>
+    <div><span class="n">08</span>日常运维套路 <small>开服、备份、恢复、改配置</small></div>
+    <div><span class="n">09</span>安全须知 <small>默认监听 0.0.0.0 意味着什么</small></div>
+    <div><span class="n">10</span>常见问题 FAQ <small>十个踩过的坑</small></div>
+    <div><span class="n">11</span>压缩包内容清单</div>
+    <div><span class="n">12</span>致谢与许可</div>
+  </div>
+
+  <div class="note" style="margin-top:22px">
+    <b>先看这一句：</b>把整个 <code>web-console</code> 文件夹解压到一个<b>不含中文和空格</b>的路径下
+    （例如 <code>D:\CoopConsole</code>），双击 <code>start-console.bat</code>，
+    浏览器打开 <code>http://127.0.0.1:7788</code> 就能用。
+    路径不对时页面顶部会直接告诉你哪一项错了，不用翻日志。
+  </div>
+</section>
+
+<!-- ══════════════ 01 项目简介 ══════════════ -->
+<section>
+  <h2><span class="num">01</span>项目简介</h2>
+
+  <p class="lead">
+    Bannerlord Coop 是一个让《骑马与砍杀 2：霸主》支持多人联机的模组，它自带一个专用服务器
+    （Dedicated Server）。这个服务器跑起来就是一个<b>全屏终端界面</b>：所有操作靠敲命令，
+    所有信息靠滚屏。开服、停服、存档、踢人、看谁在线，全在下图这样的窗口里完成。
+  </p>
+
+  <h3>痛点</h3>
+  <ul>
+    <li><b>看不见</b>——服务端只有 ASCII 终端，1000 多行日志滚过去就找不到了，也没有搜索。</li>
+    <li><b>管不了</b>——想备份存档得先敲 <code>save</code>，再手动去 Documents 里找文件夹打包。</li>
+    <li><b>查不到</b>——谁在线、谁等级多少、装备了什么、人在卡拉迪亚哪个角落，终端里都没有。</li>
+    <li><b>离不开</b>——专用服必须一直开着，人一走开就不知道刚才发生了什么。</li>
+    <li><b>看不懂</b>——服务端只输出英文，中文玩家看着吃力。</li>
+  </ul>
+
+  <h3>这个工具做了什么</h3>
+  <p>
+    它是一个<b>独立运行的本地小网站</b>（Node.js，零前端框架），把这些事包了一层：
+  </p>
+  <ul>
+    <li>用<b>真实伪终端（ConPTY）</b>跑服务端，所以服务端以为自己在跟人交互，TUI 完整可用；
+      同时把终端字节流解析成状态、日志、玩家列表。</li>
+    <li>把服务端的英文日志和官方中文包对照，<b>城镇、城堡、装备、技能、perk 全部显示中文</b>。</li>
+    <li>从存档和模块导出文件里读出<b>每个玩家的等级、装备、部队、技能、位置</b>，
+      并画在一张可缩放拖动的卡拉迪亚地图上。</li>
+    <li>一键存档 + 打包备份 + 一键恢复，带备注。</li>
+    <li>全部路径、端口<b>都可以配置</b>，不写死盘符，整个目录拷给别人就能用。</li>
+  </ul>
+
+  <div class="tip">
+    <b>它不改游戏。</b>没有 DLL 注入，没有改服务端二进制，只是启动它、读它的输出、按它的规则发命令。
+    所以服务端升级后大概率还能用；真有格式变化，改的是控制台的解析层。
+  </div>
+
+  <h3>适合谁</h3>
+  <p>
+    自己开联机服、拉朋友一起玩的人。不需要懂 Linux、不需要公网服务器，
+    一台常开的 Windows 电脑 + ZeroTier / 内网就能跑起来。
+  </p>
+</section>
+
+<!-- ══════════════ 02 功能一览 ══════════════ -->
+<section>
+  <h2><span class="num">02</span>功能一览</h2>
+  <table>
+    <tr><th style="width:110px">标签</th><th>能做什么</th></tr>
+    <tr>
+      <td><b>实时日志</b></td>
+      <td>把服务端输出按行显示，支持关键字过滤与 <code>-排除词</code>、按等级筛选（重要／警告／错误）、
+        一键隐藏 .NET 堆栈噪音、下载完整日志文件。载入期刷屏的引擎日志默认折叠。</td>
+    </tr>
+    <tr>
+      <td><b>TUI 镜像</b></td>
+      <td>把服务端的全屏终端<b>原样复刻</b>成网页，颜色和布局都对。不想开两个窗口时用它看服务端在干什么。</td>
+    </tr>
+    <tr>
+      <td><b>玩家档案</b></td>
+      <td>每个玩家一张卡片：等级、锻造熟练、已解锁部件、亲手打造件数、见过的人物、
+        交易过的物品种类、行囊前几件、附庸/商队/工坊数量、当前位置（附最近地标）。可展开看装备、坐骑、部队、技能。</td>
+    </tr>
+    <tr>
+      <td><b>地图</b></td>
+      <td>整张卡拉迪亚底图，120 个城镇/城堡中文标注，所有玩家实时位置。支持滚轮缩放、拖拽平移、一键复位。</td>
+    </tr>
+    <tr>
+      <td><b>命令台</b></td>
+      <td>常用命令做成按钮（开服状态、存档、公告、踢人、关服），136 条游戏命令可搜索点击即填。
+        支持 <code>say</code> 发全服公告、直接敲任意控制台命令、↑↓ 翻历史。</td>
+    </tr>
+    <tr>
+      <td><b>存档备份</b></td>
+      <td>一键"先让服务器 save 再打包"，可写备注；列出所有备份（时间／大小／备注），一键恢复，可删除。
+        运行中恢复会被拦住，避免存档损坏。</td>
+    </tr>
+    <tr>
+      <td><b>更新日志</b></td>
+      <td>直接抓 GitHub Releases 并排版，标注"当前运行版本"，顺便提醒有没有新版本。</td>
+    </tr>
+    <tr>
+      <td><b>配置</b></td>
+      <td>服务端路径、存档目录、备份目录、控制台端口、监听地址、游戏端口，
+        <b>页面上直接改</b>，带校验和保存；下方只读展示 <code>server-config.json</code> 与当前路径。</td>
+    </tr>
+  </table>
+
+  <h3>状态栏（一直可见）</h3>
+  <p>
+    顶部常驻五颗信息胶囊：<b>运行状态</b>（未运行／启动中／运行中／停止中）、<b>阶段</b>
+    （boot／loading／serving）、<b>在线人数</b>、<b>运行时长</b>、<b>版本号</b>；
+    右侧是<b>启动服务器／停止／强制结束</b>三个按钮。
+  </p>
+  <div class="warn">
+    <b>阶段（phase）比状态更重要。</b>"运行中"只代表进程还活着，只有 <code>serving</code>
+    才代表世界已经载入完、玩家能连进来。从点"启动"到 <code>serving</code> 通常需要 55～60 秒。
+  </div>
+</section>
+
+<!-- ══════════════ 03 运行环境 ══════════════ -->
+<section>
+  <h2><span class="num">03</span>运行环境</h2>
+
+  <h3>必需</h3>
+  <table>
+    <tr><th style="width:120px">项目</th><th>要求</th><th>说明</th></tr>
+    <tr>
+      <td>操作系统</td><td>Windows 10 / 11（64 位）</td>
+      <td>服务端本身只有 Windows 版；控制台虽然跨平台，但打包与脚本按 Windows 做的。</td>
+    </tr>
+    <tr>
+      <td>游戏与服务端</td><td>Mount &amp; Blade II: Bannerlord<br>Native <b>v1.4.8.118999</b></td>
+      <td>需要已安装游戏本体（Steam），且有 <code>DedicatedServer</code> 目录。</td>
+    </tr>
+    <tr>
+      <td>联机模组</td><td>Bannerlord Coop <b>v0.1.6</b></td>
+      <td>控制台的日志解析与状态判断按这个版本的事件格式写的。其它版本多半也能跑，
+        但 <code>@DS@</code> 事件格式若变化，状态栏／在线人数可能不准。</td>
+    </tr>
+    <tr>
+      <td>Node.js</td><td><b>18 或更高</b>，推荐 22 LTS</td>
+      <td>压缩包<b>已经带了 node_modules</b>（含 node-pty 的 Windows 预编译二进制），
+        正常情况下不需要联网、不需要编译、不需要 Visual Studio。</td>
+    </tr>
+    <tr>
+      <td>浏览器</td><td>Edge / Chrome / Firefox 近两年的版本</td>
+      <td>界面用到 SSE 与 Canvas/SVG 绘制，IE 和很老的浏览器不行。</td>
+    </tr>
+    <tr>
+      <td>磁盘</td><td>约 200 MB</td>
+      <td>控制台本体约 30 MB；其余是日志与备份（备份大小取决于存档体积，通常每个 30～80 MB）。</td>
+    </tr>
+  </table>
+
+  <h3>网络与端口</h3>
+  <table>
+    <tr><th style="width:120px">端口</th><th>协议</th><th>用途</th><th>默认</th></tr>
+    <tr><td>控制台</td><td>TCP</td><td>浏览器访问的网页端口</td><td><b>7788</b></td></tr>
+    <tr><td>游戏</td><td>UDP</td><td>玩家连服务器用的端口，必须放行</td><td><b>4200</b></td></tr>
+  </table>
+  <p>
+    控制台默认监听 <code>0.0.0.0</code>（所有网卡），所以同机器用
+    <code>http://127.0.0.1:7788</code>，同局域网／ZeroTier 用
+    <code>http://本机IP:7788</code>。启动窗口会把所有可用地址直接打印出来，复制即可。
+  </p>
+
+  <div class="warn">
+    <b>关于 0.0.0.0。</b>它包含公网网卡。如果你的机器直接暴露在公网、又没有设访问口令，
+    任何人打开这个地址都能启停你的服务器、恢复你的存档。<b>请务必读第 09 节。</b>
+    只想局域网用，把监听地址改成 <code>auto</code>（只放私有网段）；只给自己用，改成 <code>127.0.0.1</code>。
+  </div>
+
+  <h3>目录约定</h3>
+  <p>下面三种目录是<b>三个不同的地方</b>，初次使用最容易搞混：</p>
+<pre><span class="c"># 1. 服务端（游戏安装目录下）</span>
+D:\SteamLibrary\steamapps\common\Mount &amp; Blade II Bannerlord\
+  └─ DedicatedServer\BannerlordCoopServer.exe
+
+<span class="c"># 2. 控制台（本压缩包，随便放哪）</span>
+D:\CoopConsole\
+  ├─ server.js  start-console.bat  config.json
+  └─ ……
+
+<span class="c"># 3. 存档与配置（固定跟着 Windows「文档」走）</span>
+C:\Users\你的用户名\Documents\Mount and Blade II Bannerlord\CoopData\
+  ├─ DedicatedServer\Game Saves\        <span class="c"># 存档</span>
+  ├─ DedicatedServer\logs\              <span class="c"># 服务端日志</span>
+  └─ mod-config.json                    <span class="c"># 玩法配置</span>
+</pre>
+  <p>
+    控制台会<b>自动探测</b>这三个位置：从自己所在目录往上找 5 层，看哪层有
+    <code>DedicatedServer\BannerlordCoopServer.exe</code>；存档目录按当前 Windows 用户名推算。
+    所以把控制台放进游戏根目录下通常什么都不用配。
+  </p>
+</section>
+
+<!-- ══════════════ 04 安装与首次启动 ══════════════ -->
+<section>
+  <h2><span class="num">04</span>安装与首次启动</h2>
+
+  <h3>第 1 步：解压</h3>
+  <p>
+    把压缩包解压到<b>不含中文、不含空格</b>的路径，例如 <code>D:\CoopConsole</code>。
+    路径带中文有时会让 Node 的某些原生模块找不到文件，虽然多数情况没事，但没必要冒险。
+  </p>
+
+  <h3>第 2 步：自检路径（推荐）</h3>
+  <p>在该目录按 <code>Shift</code> + 右键 →「在此处打开 PowerShell 窗口」，或者直接双击同目录的
+    <code>check-config.bat</code>（若包内提供了），执行：</p>
+  <pre>node lib\config.js</pre>
+  <p>它会逐项打印并标注 <b>✓ 存在</b> / <b>✗ 不存在</b>，以及该怎么改：</p>
+<pre>  ✓ 配置文件  D:\CoopConsole\config.json
+  ✓ 服务端目录 D:\SteamLibrary\…\DedicatedServer
+  ✗ 存档目录  C:\Users\某某\Documents\…\CoopData
+       → 先启动过一次服务端，或在 config.json 里写 "coopData"</pre>
+
+  <h3>第 3 步：启动控制台</h3>
+  <p>双击 <code>start-console.bat</code>。窗口里会出现一个地址列表：</p>
+<pre>  Bannerlord Coop 服务器控制台
+  监听      : 0.0.0.0:7788（对外）
+  监听来源  : 地址 = 内置默认值，端口 = 内置默认值（改 config.json 后重启生效）
+  本机打开  : http://127.0.0.1:7788/
+  局域网    : http://192.168.1.23:7788/
+  ZeroTier : http://10.5.218.11:7788/   [ZeroTier One]
+</pre>
+  <div class="note">
+    <b>不要关这个黑窗口。</b>服务端跑在它的伪终端里，窗口关掉 = 服务器一起停。
+    想长期挂机见第 08 节。
+  </div>
+
+  <h3>第 4 步：打开控制台并启动服务器</h3>
+  <ol>
+    <li>浏览器打开 <code>http://127.0.0.1:7788</code>；</li>
+    <li>点右上角<b>「启动服务器」</b>；</li>
+    <li>状态栏从「启动中 / boot」变成「启动中 / loading」，约 <b>55～60 秒</b>后变成
+      「运行中 / serving」，此时玩家才能连进来。</li>
+  </ol>
+
+  <h3>第 5 步：放行防火墙</h3>
+  <p>要让别人连进来，游戏端口（默认 UDP 4200）必须放行。以管理员身份运行 <code>open-firewall.bat</code>，
+    它一次放行控制台 TCP 端口与游戏 UDP 端口：</p>
+  <pre>open-firewall.bat            <span class="c">:: 默认 7788 / 4200</span>
+open-firewall.bat 7788 4200  <span class="c">:: 自定义端口时显式指定</span></pre>
+  <div class="note">
+    部分机器上 Windows 防火墙的三个配置文件都已关闭，此时不需要放行也能连。
+    但换机、换网络、或者开了第三方安全软件时，这一步省不了。
+  </div>
+</section>
+
+<!-- ══════════════ 05 界面总览 ══════════════ -->
+<section>
+  <h2><span class="num">05</span>界面总览</h2>
+  <p>
+    整个界面只有一页，八个标签，靠顶部导航切换。地址栏会记住你当前在哪个标签
+    （例如 <code>http://127.0.0.1:7788/#map</code>），可以直接收藏某一页。
+  </p>
+
+  <figure>
+    <img src="shots/01-log.png" alt="实时日志">
+    <figcaption>图 5-1　实时日志：默认首页。上方是状态胶囊与启动/停止按钮，下方是过滤工具栏与日志流</figcaption>
+  </figure>
+
+  <h3>几处一眼要认出来的地方</h3>
+  <table>
+    <tr><th style="width:130px">位置</th><th>含义</th></tr>
+    <tr><td>左上「BC」标</td><td>产品标识，没有功能。</td></tr>
+    <tr><td>中间五颗胶囊</td><td>状态／阶段／在线人数／运行时长／版本。点不动，纯展示。</td></tr>
+    <tr><td>右上三个按钮</td><td><b>启动服务器</b>（未运行时可用）、<b>停止</b>（优雅停止，会先发 <code>stop</code>
+      等它自己退，最多等 45 秒）、<b>强制结束</b>（前两步无效时才用，直接杀进程树）。</td></tr>
+    <tr><td>标签上的小数字</td><td>玩家档案上的数字是在线人数，存档备份上的是备份份数。</td></tr>
+    <tr><td>工具栏最右的灰字</td><td>当前日志文件名、最后更新时间这类上下文信息。</td></tr>
+  </table>
+
+  <div class="tip">
+    <b>刷新页面不会让服务器重启。</b>控制台和浏览器是分开的两个进程，
+    关掉浏览器、换台电脑打开同一个地址，看到的都是同一个服务器状态。
+  </div>
+</section>
+
+<!-- ══════════════ 06 各标签详解 ══════════════ -->
+<section>
+  <h2><span class="num">06</span>各标签详解</h2>
+
+  <h3>6.1　实时日志</h3>
+  <p>服务端每一行输出都会进来。默认勾选「隐藏堆栈噪音」，把 .NET 异常堆栈和载入期刷屏折叠掉。</p>
+  <ul>
+    <li><b>过滤框</b>：输入关键字即时过滤；写 <code>-词</code> 表示排除（例：<code>player -telemetry</code>）。</li>
+    <li><b>等级下拉</b>：全部／只看重要（警告、错误、SERVING 这类关键行）／警告及以上／只看错误。</li>
+    <li><b>自动滚动</b>：取消勾选后日志不再往下跑，方便往上翻着看。</li>
+    <li><b>下载日志文件</b>：把整份日志文件拉下来，排查问题时给别人看很方便。</li>
+  </ul>
+
+  <figure>
+    <img src="shots/02-tui.png" alt="TUI 镜像">
+    <figcaption>图 6-1　TUI 镜像：服务端屏幕的完整复刻，连边框和颜色都一样</figcaption>
+  </figure>
+
+  <h3>6.2　TUI 镜像</h3>
+  <p>
+    把服务端的全屏终端按字符网格还原：状态栏、日志区、玩家列表、底部命令行，位置和颜色都对齐。
+    服务端刷新时这里跟着刷新。
+  </p>
+  <div class="note">
+    <b>图里那段红色堆栈不是故障。</b>服务端每 60 秒会尝试上传一次遥测数据，
+    它的上报域名在部分地区连不通，于是每次都失败并打印一大块 SSL 异常。功能上没有任何影响，
+    在「实时日志」里勾着「隐藏堆栈噪音」就看不见它。
+  </div>
+</section>
+
+<section>
+  <h3>6.3　玩家档案</h3>
+  <p>
+    每个玩家一张卡片。数据来自两个地方：<b>存档里的配对文件</b>（锻造、交易、社交、行囊）
+    和<b>游戏内模块每 15 秒导出一次的玩家详情</b>（等级、家族、装备、部队、技能）。后者没部署时，
+    卡片仍然能显示，只是装备和技能是空的。
+  </p>
+
+  <figure>
+    <img src="shots/03-players.png" alt="玩家档案">
+    <figcaption>图 6-2　玩家档案：顶部是世界状态条（日期、时间模式、在线/总玩家、全局部队数、地图事件数）</figcaption>
+  </figure>
+
+  <ul>
+    <li><b>卡片头部</b>：头像块（姓名首字）、名字、等级、家族/势力、SteamID64、在线或离线标记。</li>
+    <li><b>锻造总熟练</b>：把各武器专精加总，一眼看出谁在打铁。</li>
+    <li><b>专精条</b>：投掷／弓／长杆／弩／双手／单手等，按熟练度排序取前几项。</li>
+    <li><b>当前位置</b>：世界坐标 + 最近的地标名（例如「附近 弗林托格堡」）。</li>
+    <li><b>行囊</b>：按价值取前几件，含数量。</li>
+    <li><b>往来与家族</b>：村庄、商队、工坊、竞技场大师、是否开放竞技大会。</li>
+    <li><b>查看详情 →</b>：展开装备槽、坐骑、部队编成、技能与属性点。</li>
+  </ul>
+  <div class="tip">
+    「附近地标」是把玩家坐标和地图上 120 个聚落做距离比较得出的，不是游戏原生数据。
+    所以它给的是<b>最近的那个城镇或城堡</b>，不一定是玩家正站在里面。
+  </div>
+</section>
+
+<section>
+  <h3>6.4　地图</h3>
+  <p>
+    一张完整的卡拉迪亚地图，底图是社区制作的高清版本（见第 12 节致谢），
+    上面叠了 120 个聚落的中文标注和所有玩家的实时位置。
+  </p>
+
+  <figure>
+    <img src="shots/04-map.png" alt="地图">
+    <figcaption>图 6-3　地图：城镇常显名字，城堡放大后才显示；蓝点是玩家，紫点是其他队伍</figcaption>
+  </figure>
+
+  <table>
+    <tr><th style="width:130px">操作</th><th>效果</th></tr>
+    <tr><td>滚轮</td><td>以鼠标位置为中心缩放。缩到较远时城堡名自动隐藏，避免糊成一团。</td></tr>
+    <tr><td>按住拖动</td><td>平移视野（内容跟手）。</td></tr>
+    <tr><td>鼠标悬停聚落/玩家</td><td>显示中文名（附带英文原名）。</td></tr>
+    <tr><td>复位视野</td><td>回到能看全整张地图的默认视角。</td></tr>
+    <tr><td>刷新位置</td><td>立刻重新拉一次玩家坐标，不用等自动刷新。</td></tr>
+  </table>
+  <div class="note">
+    地图默认视角按你浏览器的窗口比例算，所以宽屏上两侧会多一点海面，这是故意的——
+    如果强行铺满，上下会被裁掉 40%，反而看不到北方的雪原和南方的沙漠。
+  </div>
+
+  <h3>6.5　命令台</h3>
+  <p>把常用操作做成按钮，剩下 136 条游戏命令做成可搜索的标签墙，点一下填进输入框，再回车发送。</p>
+
+  <figure>
+    <img src="shots/05-cmd.png" alt="命令台">
+    <figcaption>图 6-4　命令台：上方是按用途分组的常用操作，下方是全部 136 条游戏命令</figcaption>
+  </figure>
+
+  <table>
+    <tr><th style="width:120px">分组</th><th>内容</th></tr>
+    <tr><td>服务器状态</td><td><code>status</code> 打印端口与存档名、<code>players</code> 列出在线玩家、<code>help</code> 帮助</td></tr>
+    <tr><td>公告 / 推送</td><td><code>say 文字</code> 向全服发一条消息；预置了几条常用公告，点一下直接发</td></tr>
+    <tr><td>存档 / 保存</td><td><code>save</code> 立即存档、<code>status</code> 查看当前存档名</td></tr>
+    <tr><td>踢人</td><td>选择在线玩家后点 <code>kick</code>；没人在线时显示「暂无在线玩家」</td></tr>
+    <tr><td>关服</td><td><code>stop</code> 优雅关服，会先存档再退出</td></tr>
+    <tr><td>命令全集</td><td>搜索框 + 全部游戏命令，点一下填入</td></tr>
+  </table>
+  <div class="warn">
+    <b>命令台是"直接对服务端敲命令"。</b>像 <code>campaign.add_gold_to_hero</code>
+    这类作弊命令，服务端若禁用了作弊模式会直接拒绝执行，控制台会把报错原样显示出来，不会静默失败。
+  </div>
+</section>
+
+<section>
+  <h3>6.6　存档备份</h3>
+
+  <figure>
+    <img src="shots/06-saves.png" alt="存档备份">
+    <figcaption>图 6-5　存档备份：先存档再打包，可写备注；恢复时运行中的服务器会被拦住</figcaption>
+  </figure>
+
+  <ul>
+    <li><b>立即备份</b>：勾选「先让服务器 save 再打包」时，会先发一条 <code>save</code>，
+      等存档真正落盘后再把整个 <code>Game Saves</code> 目录打包，避免打出正在写的半份存档。</li>
+    <li><b>备注</b>：写「打完第一场大战」这类话，以后翻备份能一眼认出来。</li>
+    <li><b>恢复</b>：把备份解回存档目录。服务器运行中会拒绝恢复（返回 409），必须先停服。</li>
+    <li><b>删除</b>：备份不会自动清理，页面显示总占用，自己按需删。</li>
+  </ul>
+
+  <h3>6.7　更新日志</h3>
+  <p>直接从 GitHub Releases 抓取并排版，标注你当前跑的版本，顺便告诉你有没有新的。</p>
+
+  <figure>
+    <img src="shots/07-changelog.png" alt="更新日志">
+    <figcaption>图 6-6　更新日志：绿色标签是「当前运行版本」，抓取结果会缓存，可手动重新抓</figcaption>
+  </figure>
+
+  <h3>6.8　配置</h3>
+  <p>
+    最上面一张卡片可以<b>直接改</b>路径和端口，八项一人一行，改完点「校验并保存」。
+    下面三张是只读的：游戏侧的 <code>server-config.json</code>、玩法设置 <code>mod-config.json</code>、以及当前解析出的所有路径。
+  </p>
+
+  <figure>
+    <img src="shots/08-config.png" alt="配置">
+    <figcaption>图 6-7　配置：可编辑表单一栏一项，每栏下方灰字写明默认值和取值来源</figcaption>
+  </figure>
+
+  <p>三个按钮：</p>
+  <ul>
+    <li><b>校验并保存</b>：先校验，通过才写入，校验不过<b>一个字都不写</b>。</li>
+    <li><b>只校验</b>：只看结果，不落盘。</li>
+    <li><b>还原当前值</b>：把输入框恢复成磁盘上正在生效的值。</li>
+  </ul>
+  <div class="warn">
+    <b>存完必须重启控制台才生效。</b>因为配置是控制台启动那一刻读进内存的常量。
+    重启会连带停掉服务端，起来后记得再点一次「启动服务器」。
+  </div>
+</section>
+
+<!-- ══════════════ 07 配置项 ══════════════ -->
+<section>
+  <h2><span class="num">07</span>配置项</h2>
+  <p>
+    配置只有一个文件：控制台目录下的 <code>config.json</code>。它<b>可以不存在</b>——
+    不存在时全部走自动探测。要生成一份带注释的模板：
+  </p>
+  <pre>node lib\config.js --init</pre>
+
+  <h3>字段</h3>
+  <table>
+    <tr><th style="width:120px">字段</th><th>说明</th><th style="width:150px">默认</th></tr>
+    <tr><td><code>root</code></td><td>服务端安装目录（含 <code>DedicatedServer</code> 子目录的那层）</td><td>从控制台目录往上找 5 层</td></tr>
+    <tr><td><code>serverDir</code></td><td>服务端目录本身；给了就不用 <code>root</code></td><td><code>root\DedicatedServer</code></td></tr>
+    <tr><td><code>coopData</code></td><td>存档与配置根目录</td><td><code>文档\Mount and Blade II Bannerlord\CoopData</code></td></tr>
+    <tr><td><code>savesDir</code></td><td>单独指定存档目录</td><td><code>coopData\DedicatedServer\Game Saves</code></td></tr>
+    <tr><td><code>backupDir</code></td><td>备份存放位置</td><td>控制台目录下 <code>backups</code></td></tr>
+    <tr><td><code>port</code></td><td>控制台网页端口</td><td><b>7788</b></td></tr>
+    <tr><td><code>host</code></td><td>控制台监听地址</td><td><b>0.0.0.0</b></td></tr>
+    <tr><td><code>gamePort</code></td><td>游戏端口（防火墙要放行 UDP）</td><td><b>4200</b></td></tr>
+  </table>
+
+  <p>允许 <code>//</code> 注释和尾逗号，所以手改不容易出错：</p>
+<pre>{
+  // 服务端装在哪
+  "root": "D:\\SteamLibrary\\steamapps\\common\\Mount &amp; Blade II Bannerlord",
+  // 只给自己用就改成 127.0.0.1
+  "host": "auto",
+  "port": 7788,
+}</pre>
+
+  <h3>host 的三种写法</h3>
+  <table>
+    <tr><th style="width:150px">写法</th><th>含义</th></tr>
+    <tr><td><code>0.0.0.0</code></td><td><b>默认。</b>所有网卡，含公网网卡。局域网、ZeroTier、本机都能访问。</td></tr>
+    <tr><td><code>auto</code></td><td>回环 + 所有<b>私有网段</b>（10.x / 172.16–31.x / 192.168.x / 100.64–127.x），
+      <b>公网 IP 不自动放</b>。最稳妥的对外方式。</td></tr>
+    <tr><td><code>127.0.0.1</code></td><td>只有本机能访问，别人打不开。</td></tr>
+    <tr><td><code>127.0.0.1,10.5.1.2</code></td><td>逗号分隔，精确指定只听哪几个地址。</td></tr>
+  </table>
+
+  <h3>优先级（重要）</h3>
+  <p>同一个配置项有多个来源时，按下面的顺序取第一个有值的：</p>
+<pre>端口    : 环境变量 COOP_CONSOLE_PORT &gt; --port &gt; config.json &gt; 默认 7788
+监听地址: 环境变量 COOP_CONSOLE_HOST &gt; --host &gt; config.json &gt; 默认 0.0.0.0
+其它路径: 环境变量 &gt; config.json &gt; 自动探测</pre>
+  <p>
+    页面上每栏下方那行灰字会直接告诉你<b>「当前值来自 …」</b>，
+    启动窗口也有一行「监听来源」，所以不用猜。
+  </p>
+
+  <h3>命令行参数</h3>
+  <table>
+    <tr><th style="width:150px">参数</th><th>作用</th><th>优先级</th></tr>
+    <tr><td><code>local</code></td><td>只监听 127.0.0.1</td><td>低于 config.json</td></tr>
+    <tr><td><code>lan</code></td><td>只监听回环 + 私有网段</td><td>低于 config.json</td></tr>
+    <tr><td><code>--port 7790</code></td><td>使用指定端口</td><td><b>高于</b> config.json</td></tr>
+  </table>
+  <pre>start-console.bat              <span class="c">:: 0.0.0.0:7788（默认）</span>
+start-console.bat local        <span class="c">:: 只本机</span>
+start-console.bat lan          <span class="c">:: 局域网 / ZeroTier</span>
+start-console.bat 7790         <span class="c">:: 换端口（用于开第二个只读面板）</span></pre>
+  <div class="note">
+    <b>开第二个面板：</b>主控制台正在跑服务器、不想动它，可以另起一个实例用不同端口
+    指向同一份日志。<code>--port</code> 之所以优先级高于配置文件，就是为了这个场景。
+    但注意第二个实例<b>不要</b>点"启动/停止"，它不拥有那个服务端进程。
+  </div>
+</section>
+
+<!-- ══════════════ 08 日常运维 ══════════════ -->
+<section>
+  <h2><span class="num">08</span>日常运维套路</h2>
+
+  <h3>开服</h3>
+  <ol>
+    <li>双击 <code>start-console.bat</code>，窗口留着别关；</li>
+    <li>浏览器打开控制台，点<b>启动服务器</b>；</li>
+    <li>等状态栏变成<b>运行中 / serving</b>（约 60 秒），把地址发给朋友。</li>
+  </ol>
+
+  <h3>关服</h3>
+  <p>
+    按顺序试：<b>停止</b>（优雅，会先存档）→ 还不停就 <b>强制结束</b> → 最后才去关那个黑窗口。
+    反过来做最容易丢存档。
+  </p>
+
+  <h3>备份（每天或每次大规模战斗前）</h3>
+  <ol>
+    <li>进「存档备份」；</li>
+    <li>备注写清楚，例如 <code>Day12 破城前</code>；</li>
+    <li>点<b>立即备份</b>，等进度结束；</li>
+    <li>确认列表里多了一条、大小和存档量级相符。</li>
+  </ol>
+
+  <h3>恢复</h3>
+  <ol>
+    <li>先<b>停止服务器</b>（运行中恢复会被拒绝）；</li>
+    <li>找到目标备份，点<b>恢复</b>；</li>
+    <li>重新点<b>启动服务器</b>，等 serving。</li>
+  </ol>
+
+  <h3>改配置的顺序（别搞反）</h3>
+  <ol>
+    <li>控制台里<b>停止服务器</b>；</li>
+    <li>「配置」页改好 → <b>校验并保存</b>；</li>
+    <li>关闭黑窗口，重新双击 <code>start-console.bat</code>；</li>
+    <li>再点<b>启动服务器</b>。</li>
+  </ol>
+
+  <h3>长期挂机</h3>
+  <p>
+    控制台跑在伪终端里，窗口关掉服务器就停。要长期开：把黑窗口最小化别关，
+    并在 Windows 电源设置里关掉"睡眠"，或者用计划任务在开机时拉起
+    <code>start-console.bat</code>。注意本工具<b>不负责</b>崩溃自动重启。
+  </p>
+
+  <h3>排障三板斧</h3>
+  <table>
+    <tr><th style="width:150px">现象</th><th>先看这里</th></tr>
+    <tr><td>页面打不开</td><td>黑窗口还在吗？窗口里「监听」那行是哪个地址？防火墙放行了吗？</td></tr>
+    <tr><td>一直卡在 loading</td><td>「TUI 镜像」看服务端在干什么；「实时日志」筛"错误"。</td></tr>
+    <tr><td>数据是空的</td><td>「配置」页的路径对不对；<code>node lib\config.js</code> 看哪项 ✗。</td></tr>
+  </table>
+</section>
+
+<!-- ══════════════ 09 安全 ══════════════ -->
+<section>
+  <h2><span class="num">09</span>安全须知</h2>
+
+  <p class="lead">
+    这是个<b>没有任何登录界面</b>的管理后台：谁打开这个地址，谁就能启停服务器、恢复存档、踢人、发全服公告。
+    默认监听 <code>0.0.0.0</code> 是为了"解压就能用"，代价是<b>它能被同一网络里的任何人打开</b>。
+  </p>
+
+  <h3>按你的场景选一种</h3>
+  <table>
+    <tr><th style="width:170px">场景</th><th>建议</th></tr>
+    <tr>
+      <td>只在自己电脑上用</td>
+      <td><code>host</code> 改成 <code>127.0.0.1</code>。最简单也最安全。</td>
+    </tr>
+    <tr>
+      <td>自己和朋友在 ZeroTier / 家里局域网</td>
+      <td><code>host</code> 改成 <code>auto</code>。只放私有网段，公网网卡不监听。</td>
+    </tr>
+    <tr>
+      <td>机器有公网 IP</td>
+      <td>用 <code>auto</code>，并且<b>一定</b>加访问口令（见下），或者干脆别开这个端口。</td>
+    </tr>
+  </table>
+
+  <h3>加访问口令</h3>
+  <p>启动前设置环境变量 <code>COOP_CONSOLE_TOKEN</code>，之后所有请求都要带口令：</p>
+  <pre>set COOP_CONSOLE_TOKEN=换成你的一串随机字符
+start-console.bat</pre>
+  <p>带口令有三种方式，任选其一：</p>
+  <ul>
+    <li>网址后缀：<code>http://127.0.0.1:7788/?token=你的口令</code>（之后会写进 Cookie）</li>
+    <li>请求头：<code>X-Console-Token</code></li>
+    <li>Cookie：<code>coop_console_token</code></li>
+  </ul>
+
+  <div class="warn">
+    <b>另外两件事：</b><br>
+    1. 控制台会<b>执行你输入的任何服务端命令</b>，包括作弊命令。别把地址给不熟的人。<br>
+    2. 备份目录里是完整存档，等于所有人的游戏进度。分享截图时注意别把路径和 SteamID 一起发出去。
+  </div>
+</section>
+
+<!-- ══════════════ 10 FAQ ══════════════ -->
+<section>
+  <h2><span class="num">10</span>常见问题 FAQ</h2>
+
+  <h3>Q1　双击 bat 窗口一闪就没了</h3>
+  <p>先看是不是<b>没装 Node.js</b>：窗口里会打印 <code>Node.js not found</code>。
+    装 Node 18 以上（推荐 22 LTS），重开即可。若装过还是闪退，
+    在本目录打开 PowerShell 执行 <code>node server.js</code>，报错会停在屏幕上。</p>
+
+  <h3>Q2　页面能开，但一直显示"未运行"</h3>
+  <p>点右上角<b>启动服务器</b>。控制台自己不会去拉服务端，需要你点一下。</p>
+
+  <h3>Q3　点启动后很快变成"已停止"</h3>
+  <p>服务端起来就崩了。切到「TUI 镜像」看最后几行，通常是：<br>
+    · 游戏版本不对（需要 Native v1.4.8.118999）<br>
+    · Coop 模组版本不对（需要 v0.1.6）<br>
+    · 端口被占用（换个 <code>gamePort</code>，或先关掉占用的进程）<br>
+    · 存档损坏（用「存档备份」恢复一个）</p>
+
+  <h3>Q4　玩家档案是空的</h3>
+  <p>两段数据各有条件：<b>存档配对文件</b>要服务端存过盘、且跑过一次；<b>玩家详情</b>要游戏内
+    <code>CoopPlayerCard</code> 模块部署过，并且服务端跑到读档完成之后才会有。
+    页面底部那行小字会告诉你当前读的是哪个文件、什么时候更新的。</p>
+
+  <h3>Q5　地图一片空白 / 只有海</h3>
+  <p>地图由底图 + 120 个聚落坐标组成，坐标来自服务端的 <code>settlements.xml</code>。
+    若只有底色，说明客户端没加载到 <code>public/img/calradia.jpg</code>——
+    检查压缩包是否解压完整（该文件约 2.5 MB）。</p>
+
+  <h3>Q6　日志里全是红字堆栈</h3>
+  <p>遥测上传失败，每 60 秒一次，<b>不影响任何功能</b>。勾上「隐藏堆栈噪音」即可。</p>
+
+  <h3>Q7　中文乱码 / 显示方块</h3>
+  <p>服务端是英文环境，中文来自随包的中文语言文件。若聚落名显示英文，
+    说明没找到 <code>engine\Modules\*\ModuleData\Languages\CNs</code>，
+    检查 <code>serverDir</code> 是否指对。界面本身的中文不受影响。</p>
+
+  <h3>Q8　端口 7788 被占用</h3>
+  <p>换一个：<code>start-console.bat 7790</code>，或在「配置」页把端口改成 7790 再重启。
+    想找出谁占了：<code>netstat -ano | findstr :7788</code>。</p>
+
+  <h3>Q9　关掉黑窗口后玩家掉了</h3>
+  <p>正常。服务端跑在那个窗口的伪终端里。要长期开就别关它（最小化可以）。</p>
+
+  <h3>Q10　改了配置怎么没生效</h3>
+  <p>因为配置在<b>控制台启动时</b>读进内存。改完要重启控制台（连带重启服务端）。
+    「配置」页每栏底部的灰字会显示「当前值来自 …」，能看出是不是被环境变量或命令行压住了。</p>
+</section>
+
+<!-- ══════════════ 11 包内容 ══════════════ -->
+<section>
+  <h2><span class="num">11</span>压缩包内容清单</h2>
+  <pre>CoopConsole\
+├─ start-console.bat        启动控制台（默认 0.0.0.0:7788）
+├─ start-console-lan.bat    只监听局域网 / ZeroTier
+├─ open-firewall.bat        放行 TCP 7788 + UDP 4200（需管理员）
+├─ server.js                控制台主程序
+├─ package.json
+├─ config.example.json      配置示例（带注释）
+├─ README.md                完整技术文档（比本手册更细）
+├─ lib\                     路径解析 / PTY 进程 / 日志 / 存档 / 玩家 / 地图
+├─ public\                  前端页面、脚本、样式、卡拉迪亚底图
+├─ data\                    命令表、更新日志缓存
+├─ node_modules\            已含 node-pty 的 Windows 预编译二进制
+├─ tools\                   自检与自测脚本
+└─ docs\                    本手册 PDF 与界面截图</pre>
+
+  <h3>拿到包之后建议做的三件事</h3>
+  <ol>
+    <li><code>node lib\config.js</code> —— 确认三个路径都是 ✓；</li>
+    <li>双击 <code>start-console.bat</code> —— 确认窗口里打印出了可访问地址；</li>
+    <li>浏览器进「配置」页 —— 按自己的网络环境把监听地址改成 <code>auto</code> 或 <code>127.0.0.1</code>。</li>
+  </ol>
+
+  <div class="note">
+    包里的 <code>node_modules</code> 是 Windows x64 的预编译产物。
+    <b>不需要</b> <code>npm install</code>，也<b>不需要</b> Visual Studio / Python。
+    如果你在 ARM 版 Windows 或其它系统上跑，才需要自己重新装依赖。
+  </div>
+
+  <h3>卸载</h3>
+  <p>
+    直接删掉整个文件夹即可——它不写注册表、不装服务、不改系统。
+    唯一留在外面的是 <code>Documents</code> 下的 CoopData（那是游戏自己的存档，删之前想清楚）。
+  </p>
+</section>
+
+<!-- ══════════════ 12 致谢 ══════════════ -->
+<section>
+  <h2><span class="num">12</span>致谢与许可</h2>
+
+  <h3>本项目不是独立的游戏</h3>
+  <p>
+    它只是 <b>Bannerlord Coop</b> 专用服务器的一个外挂式控制台，不含任何游戏本体资源。
+    没有 Bannerlord Coop 团队的工作，这个工具没有任何意义。
+  </p>
+  <table>
+    <tr><th style="width:150px">项目</th><th>说明</th></tr>
+    <tr><td>Bannerlord Coop</td><td>联机模组与专用服务器本体，本工具针对 v0.1.6（配对提交 5f4d63c）适配</td></tr>
+    <tr><td>TaleWorlds</td><td>《骑马与砍杀 2：霸主》及其专用服务器</td></tr>
+    <tr><td>卡拉迪亚底图</td><td>Map by <b>Vesper</b> — “Calradia 1084”，来自 TaleWorlds 官方论坛</td></tr>
+    <tr><td>中文译名</td><td>取自官方简体中文语言包</td></tr>
+    <tr><td>运行时</td><td>Node.js、node-pty（ConPTY）</td></tr>
+  </table>
+
+  <h3>使用与分发</h3>
+  <ul>
+    <li>本控制台可自由转载、修改、二次分发，<b>请保留本页致谢</b>。</li>
+    <li>请不要把它当成"外挂"或"作弊工具"宣传——它能执行作弊命令，但作弊需要服务端允许；
+      它本身不修改游戏内存、不注入进程。</li>
+    <li>因使用本工具导致的存档损坏、服务器被误操作、端口暴露等问题，作者不承担责任。
+      <b>重要存档请先手动备份一份。</b></li>
+  </ul>
+
+  <div class="tip" style="margin-top:26px">
+    <b>反馈</b>　遇到问题请带上三样东西：① 控制台窗口里的报错截图；
+    ②「TUI 镜像」最后 20 行；③ <code>node lib\config.js</code> 的输出。
+    有这三样，绝大多数问题一眼能定位。
+  </div>
+
+  <p style="margin-top:30px;color:#7b8f9b;font-size:9pt;text-align:center">
+    —— 手册结束 ——
+  </p>
+</section>
+
+</body>
+</html>

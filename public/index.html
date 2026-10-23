@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bannerlord Coop 服务器控制台</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">BC</div>
+    <div class="brand-text">
+      <b>Bannerlord Coop</b>
+      <span>Dedicated Server Console</span>
+    </div>
+  </div>
+
+  <div class="pills">
+    <span class="pill off" id="pill-state"><i class="dot"></i><span>未运行</span></span>
+    <span class="pill" id="pill-phase"><b>—</b></span>
+    <span class="pill" id="pill-players"><b>0</b> 在线</span>
+    <span class="pill" id="pill-uptime"><b>—</b></span>
+    <span class="pill" id="pill-version"><b>v0.1.6</b></span>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="pills">
+    <button class="btn primary" id="btn-start">启动服务器</button>
+    <button class="btn danger" id="btn-stop">停止</button>
+    <button class="btn ghost sm" id="btn-kill" title="进程树强杀，仅在前两步无效时使用">强制结束</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="log" class="active">实时日志</button>
+  <button data-tab="tui">TUI 镜像</button>
+  <button data-tab="players">玩家档案 <span class="badge" id="badge-players">0</span></button>
+  <button data-tab="map">地图</button>
+  <button data-tab="cmd">命令台</button>
+  <button data-tab="saves">存档备份 <span class="badge" id="badge-backups">0</span></button>
+  <button data-tab="changelog">更新日志</button>
+  <button data-tab="config">配置</button>
+</nav>
+
+<main>
+
+  <!-- ——————————————— 实时日志 ——————————————— -->
+  <section class="tab active" id="tab-log">
+    <div class="toolbar">
+      <input type="search" id="log-filter" placeholder="过滤关键字，支持 -排除词" style="width:260px" />
+      <select id="log-level">
+        <option value="all">全部等级</option>
+        <option value="important">只看重要（警告/错误/SERVING）</option>
+        <option value="warn">警告及以上</option>
+        <option value="error">只看错误</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="log-follow" checked /> 自动滚动</label>
+      <label class="chk"><input type="checkbox" id="log-hide-engine" checked /> 隐藏堆栈噪音</label>
+      <button class="btn sm ghost" id="log-clear">清屏</button>
+      <button class="btn sm ghost" id="log-download">下载日志文件</button>
+      <span class="label spacer" id="log-file"></span>
+      <span class="label" id="log-count"></span>
+    </div>
+    <div id="log-view"></div>
+  </section>
+
+  <!-- ——————————————— TUI 镜像 ——————————————— -->
+  <section class="tab" id="tab-tui">
+    <div class="toolbar">
+      <span class="label">服务端控制台原样镜像（含颜色与光标重绘）</span>
+      <label class="chk" style="margin-left:auto"><input type="checkbox" id="tui-fit" checked /> 自适应宽度</label>
+      <button class="btn sm ghost" id="tui-reset">重置画面</button>
+    </div>
+    <div id="tui-wrap"><div id="tui-inner"><pre id="tui"></pre></div></div>
+  </section>
+
+  <!-- ——————————————— 玩家档案 ——————————————— -->
+  <section class="tab" id="tab-players">
+    <div class="toolbar">
+      <span class="label" id="players-source"></span>
+      <span class="label spacer" id="players-updated"></span>
+      <button class="btn sm ghost" id="players-refresh">刷新档案</button>
+    </div>
+    <div id="players-scroll">
+      <div id="realm-bar"></div>
+      <div id="player-grid"></div>
+      <div id="player-detail"></div>
+      <div id="players-note"></div>
+    </div>
+  </section>
+
+  <!-- ——————————————— 地图 ——————————————— -->
+  <section class="tab" id="tab-map">
+    <div class="toolbar">
+      <span class="label">Calradia 实时态势 · 滚轮缩放 / 拖动平移 · 位置 15 秒一刷，本页 30 秒自动刷新</span>
+      <span class="label spacer" id="map-updated"></span>
+      <button class="btn sm ghost" id="map-reset">复位视野</button>
+      <button class="btn sm ghost" id="map-refresh">刷新位置</button>
+    </div>
+    <div id="map-view"></div>
+  </section>
+
+  <!-- ——————————————— 命令台 ——————————————— -->
+  <section class="tab" id="tab-cmd">
+    <div class="cmd-grid">
+
+      <div class="card">
+        <h3>服务器状态 <span class="hint">内置命令</span></h3>
+        <div class="body">
+          <div class="chips" id="chips-basic"></div>
+          <div class="note">status 打印监听端口与存档；players 列出在线玩家；help 列出全部服务端命令。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>公告 / 喊话</h3>
+        <div class="body">
+          <div class="row-inline">
+            <input type="text" id="say-text" placeholder="要发给全服的文字" />
+            <button class="btn sm primary" id="say-send">发送 say</button>
+          </div>
+          <div class="chips" id="chips-say"></div>
+          <div class="note">语法：say &lt;文字&gt;。中文可直接发。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>存档 / 保存</h3>
+        <div class="body">
+          <div class="chips">
+            <button class="chip" data-cmd="save">save — 立即存档</button>
+            <button class="chip warn" data-action="backup-now">备份存档文件</button>
+            <button class="chip" data-cmd="status">status — 看当前存档名</button>
+          </div>
+          <div class="note">save 只是让服务器写盘；「备份存档文件」会把 Game Saves 整个复制到 backups 目录，可随时回滚。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>踢人</h3>
+        <div class="body">
+          <div class="row-inline">
+            <select id="kick-player" style="flex:1 1 auto">
+              <option value="">（暂无在线玩家）</option>
+            </select>
+            <button class="btn sm danger" id="kick-send">kick</button>
+          </div>
+          <div class="note">玩家列表来自服务端 @DS@ players 事件，有人进服后自动刷新。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>关服</h3>
+        <div class="body">
+          <div class="chips">
+            <button class="chip danger" data-cmd="stop" data-confirm="确定发送 stop 让服务器自行关闭？">stop — 优雅关服</button>
+          </div>
+          <div class="note">stop 会先存盘再退出。停止期间正在玩的玩家会被断开。</div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1">
+        <h3>命令全集 <span class="hint" id="cmds-total"></span></h3>
+        <div class="body tight">
+          <input type="search" id="cmd-search" placeholder="搜索命令名，例如 gold / crafting / morale" style="width:100%" />
+          <div class="chips" id="chips-all" style="max-height:230px;overflow-y:auto;padding-top:4px"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cmd-split">
+      <div id="cmd-out"></div>
+      <div id="cmd-input-bar">
+        <span class="prompt">&gt;</span>
+        <input type="text" id="cmd-input" placeholder="直接输入控制台命令，回车发送（↑↓ 翻历史）" autocomplete="off" />
+        <button class="btn sm primary" id="cmd-send">发送</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ——————————————— 存档备份 ——————————————— -->
+  <section class="tab" id="tab-saves">
+    <div class="toolbar">
+      <button class="btn primary" id="save-backup">立即备份</button>
+      <label class="chk"><input type="checkbox" id="save-trigger" checked /> 先让服务器 save 再打包</label>
+      <input type="text" id="save-note" placeholder="备注（可留空）" style="width:220px" />
+      <button class="btn sm ghost" id="save-refresh">刷新</button>
+      <span class="label spacer" id="save-dir"></span>
+    </div>
+
+    <div style="flex:1 1 auto;overflow-y:auto;padding:16px">
+      <div class="card" style="margin-bottom:16px">
+        <h3>当前存档文件 <span class="hint" id="save-current-hint"></span></h3>
+        <div class="body tight"><table id="save-current"></table></div>
+      </div>
+
+      <div class="card">
+        <h3>备份历史 <span class="hint">恢复前会自动把当前现场再备份一份</span></h3>
+        <div class="body tight"><table id="save-backups"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ——————————————— 更新日志 ——————————————— -->
+  <section class="tab" id="tab-changelog">
+    <div class="toolbar">
+      <span class="label" id="changelog-source"></span>
+      <span class="label spacer" id="changelog-time"></span>
+      <button class="btn sm ghost" id="changelog-refresh">从 GitHub 重新抓取</button>
+    </div>
+    <div id="changelog-view"></div>
+  </section>
+
+  <!-- ——————————————— 配置 ——————————————— -->
+  <section class="tab" id="tab-config">
+    <div class="toolbar">
+      <span class="label">上面那张卡片可以直接改路径和端口，保存后重启控制台生效；下面三张是只读展示。</span>
+      <button class="btn sm ghost spacer" id="config-refresh">刷新</button>
+    </div>
+    <div id="config-view"></div>
+  </section>
+
+</main>
+
+<div id="toasts"></div>
+
+<!-- 技能树 perk 的悬浮说明：跟着鼠标走，只在这一个地方渲染 -->
+<div id="pd-tip" class="pd-tip" hidden></div>
+
+<div id="overlay">
+  <div class="dialog">
+    <h3 id="dlg-title">确认</h3>
+    <div class="body" id="dlg-body"></div>
+    <div class="foot">
+      <button class="btn ghost" id="dlg-cancel">取消</button>
+      <button class="btn danger" id="dlg-ok">确定</button>
+    </div>
+  </div>
+</div>
+
+<script src="/term.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

@@ -5,7 +5,8 @@ const fs = require('fs');
 const pty = require('node-pty');
 
 const SECONDS = Number(process.argv[2] || 90);
-const ROOT = 'F:\\BannerlordCoopServer\\DedicatedServer';
+// 服务端目录跟着 config.json / 自动探测走，不要把盘符写死在这里
+const ROOT = require(path.join(__dirname, '..', 'lib', 'config')).serverDir;
 const EXE = path.join(ROOT, 'BannerlordCoopServer.exe');
 const OUT = path.join(__dirname, '..', 'data', 'ptyprobe.log');
 

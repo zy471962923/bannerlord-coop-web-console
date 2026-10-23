@@ -31,7 +31,7 @@ const gameConfig = {
 function consoleConfig(over) {
   return Object.assign({
     ok: true,
-    file: 'F:\\BannerlordCoopServer\\web-console\\config.json',
+    file: 'F:\\Games\\Bannerlord\\web-console\\config.json',
     exists: false,
     fields: [
       { key: 'root', label: '服务端安装目录', hint: '含 DedicatedServer 的那层', kind: 'path' },
@@ -44,9 +44,9 @@ function consoleConfig(over) {
       { key: 'gamePort', label: '游戏端口', hint: '默认 4200', kind: 'number' },
     ],
     values: {
-      root: 'F:\\BannerlordCoopServer',
-      serverDir: 'F:\\BannerlordCoopServer\\DedicatedServer',
-      coopData: 'C:\\Users\\admin\\Documents\\Mount and Blade II Bannerlord\\CoopData',
+      root: 'F:\\Games\\Bannerlord',
+      serverDir: 'F:\\Games\\Bannerlord\\DedicatedServer',
+      coopData: 'C:\\Users\\玩家\\Documents\\Mount and Blade II Bannerlord\\CoopData',
       savesDir: '', backupDir: '', port: 7788, host: '127.0.0.1', gamePort: 4200,
     },
     envLocked: [],
@@ -93,10 +93,10 @@ function mount(ccResponse) {
     });
 
     check('当前生效值回填到 input，路径反斜杠原样保住', () => {
-      assert.ok(h.includes('value="F:\\BannerlordCoopServer"'), 'root 没回填');
+      assert.ok(h.includes('value="F:\\Games\\Bannerlord"'), 'root 没回填');
       assert.ok(h.includes('value="127.0.0.1"'), 'host 没回填');
       assert.ok(h.includes('value="4200"'), 'gamePort 没回填');
-      assert.ok(h.includes('value="F:\\BannerlordCoopServer\\DedicatedServer"'), 'serverDir 没回填');
+      assert.ok(h.includes('value="F:\\Games\\Bannerlord\\DedicatedServer"'), 'serverDir 没回填');
       // 空值也要是空字符串，不能渲染成 "undefined"
       assert.ok(!h.includes('value="undefined"'), '有空值渲染成 undefined 了');
       assert.ok(!h.includes('value="null"'), '有空值渲染成 null 了');

@@ -6,8 +6,11 @@ const path = require('path');
 const jpeg = require('jpeg-js');
 
 const ROOT = path.join(__dirname, '..');
+// 原始底图 iVP5g.jpg（4000x3200 暗色版）不随仓库分发，默认放 tmp/calradia/；
+// 换机器时用环境变量 CALRADIA_TMP 指向实际目录。
+const TMP = process.env.CALRADIA_TMP || path.join(ROOT, 'tmp', 'calradia');
 const MAP = require(path.join(ROOT, 'lib', 'map'));
-const SRC = 'C:/Users/admin/AppData/Local/Temp/calradia/iVP5g.jpg';
+const SRC = path.join(TMP, 'iVP5g.jpg');
 
 // 目检确认的锚点：场景坐标 → 图片像素（圆心）
 const ANCHORS = [
@@ -75,7 +78,7 @@ for (let y = 0; y < oh; y++) for (let x = 0; x < ow; x++) {
   const sxi = (x / S) | 0, syi = (y / S) | 0, si = (syi * W + sxi) * 4, di = (y * ow + x) * 4;
   out[di] = img.data[si]; out[di + 1] = img.data[si + 1]; out[di + 2] = img.data[si + 2]; out[di + 3] = 255;
 }
-fs.writeFileSync('C:/Users/admin/AppData/Local/Temp/calradia/overlay-verify.jpg', jpeg.encode({ data: out, width: ow, height: oh }, 85).data);
+fs.writeFileSync(path.join(TMP, 'overlay-verify.jpg'), jpeg.encode({ data: out, width: ow, height: oh }, 85).data);
 console.log('overlay written');
 fs.writeFileSync(path.join(__dirname, 'calibration.json'), JSON.stringify({
   source: 'iVP5g.jpg', credit: 'Map by Vesper (Calradia 1084, January 2021, taleworlds forums)',

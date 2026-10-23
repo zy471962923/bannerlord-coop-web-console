@@ -6,9 +6,12 @@ const path = require('path');
 const jpeg = require('jpeg-js');
 
 const ROOT = path.join(__dirname, '..');
+// 原始底图 iVP5g.jpg（4000x3200 暗色版）不随仓库分发，默认放 tmp/calradia/；
+// 换机器时用环境变量 CALRADIA_TMP 指向实际目录。
+const TMP = process.env.CALRADIA_TMP || path.join(ROOT, 'tmp', 'calradia');
 const MAP = require(path.join(ROOT, 'lib', 'map'));
-const SRC = 'C:/Users/admin/AppData/Local/Temp/calradia/iVP5g.jpg';
-const OUT = 'C:/Users/admin/AppData/Local/Temp/calradia/crops';
+const SRC = path.join(TMP, 'iVP5g.jpg');
+const OUT = path.join(TMP, 'crops');
 
 // 视觉预估：城镇名 → 图片像素（中心附近即可，允许 ±80px 误差）
 const GUESSES = {

@@ -143,9 +143,9 @@ check('缺失字段如实声明，不编数字', () => {
 });
 
 // —— 在线识别：服务端只给「游戏内角色名」，存档里只有 PlatformName ——
-// 这两个名字完全不同（袁本初 ↔ Corvus.Jazz），靠 detail.name 才能对上。
-// 这条断言就是那天"人在游戏里跑图、地图上却显示离线"的回归。
-check('在线记录只给角色名时也能认出是谁（袁本初 ↔ Corvus.Jazz）', () => {
+// 这两个名字完全不同（角色名 ↔ 平台名），靠 detail.name 才能对上。
+// 这条断言就是「人在游戏里跑图、地图上却显示离线」的回归。
+check('在线记录只给角色名时也能认出是谁（角色名 ↔ 平台名）', () => {
   if (!s.ok) return;
   const target = s.players.find((p) => p.detail && p.detail.name);
   assert.ok(target, '没有带 detail.name 的玩家，无法验证（先让 CoopPlayerCard 落一次盘）');

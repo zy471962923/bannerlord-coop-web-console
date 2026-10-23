@@ -11,8 +11,13 @@ const fs = require('fs');
 const path = require('path');
 const jpeg = require('jpeg-js');
 
-const SRC = process.argv[2] || 'C:/Users/admin/AppData/Local/Temp/calradia/iVP5g.jpg';
-const DST = process.argv[3] || 'C:/Users/admin/AppData/Local/Temp/calradia/calradia-clean.jpg';
+const ROOT = path.join(__dirname, '..');
+// 原始底图 iVP5g.jpg（4000x3200 暗色版）不随仓库分发，默认放 tmp/calradia/；
+// 换机器时用环境变量 CALRADIA_TMP 指向实际目录。
+const TMP = process.env.CALRADIA_TMP || path.join(ROOT, 'tmp', 'calradia');
+
+const SRC = process.argv[2] || path.join(TMP, 'iVP5g.jpg');
+const DST = process.argv[3] || path.join(TMP, 'calradia-clean.jpg');
 
 // 图例图标窄条（彩色势力方块 + 训练场/城镇/城堡/村庄符号都在这一竖条里，
 // 四周全是海面；文字部分由白色掩膜自动处理，不能整块填面板——

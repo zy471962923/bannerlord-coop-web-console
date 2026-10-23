@@ -9,9 +9,12 @@ const path = require('path');
 const jpeg = require('jpeg-js');
 
 const ROOT = path.join(__dirname, '..');
+// 原始底图 iVP5g.jpg（4000x3200 暗色版）不随仓库分发，默认放 tmp/calradia/；
+// 换机器时用环境变量 CALRADIA_TMP 指向实际目录。
+const TMP = process.env.CALRADIA_TMP || path.join(ROOT, 'tmp', 'calradia');
 const MAP = require(path.join(ROOT, 'lib', 'map'));
-const SRC = 'C:/Users/admin/AppData/Local/Temp/calradia/iVP5g.jpg';
-const OUT = 'C:/Users/admin/AppData/Local/Temp/calradia/crops2';
+const SRC = path.join(TMP, 'iVP5g.jpg');
+const OUT = path.join(TMP, 'crops2');
 
 // 初始仿射（Galend、Tyal 两锚点算出，随迭代更新）
 const AFF = { sx: 4.7150, ox: 22.1, sy: -4.7390, oy: 3462.1 };
